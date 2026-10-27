@@ -1,0 +1,113 @@
+---
+// Formulario de registro. Estilos en src/styles/auth.css y
+// validación en src/scripts/auth-forms.ts.
+---
+
+<form class="auth-form" id="register-form" novalidate>
+	<div class="auth-field">
+		<label for="register-name">Nombre completo</label>
+		<div class="auth-control">
+			<input
+				class="auth-input"
+				id="register-name"
+				name="full_name"
+				type="text"
+				autocomplete="name"
+				placeholder="Ej. María López"
+				required
+				data-required-msg="Ingresa tu nombre."
+				aria-describedby="register-name-error"
+			/>
+		</div>
+		<p class="auth-error" id="register-name-error" aria-live="polite"></p>
+	</div>
+
+	<div class="auth-field">
+		<label for="register-email">Correo electrónico</label>
+		<div class="auth-control">
+			<input
+				class="auth-input"
+				id="register-email"
+				name="email"
+				type="email"
+				autocomplete="email"
+				placeholder="tucorreo@ejemplo.com"
+				required
+				data-required-msg="Ingresa tu correo electrónico."
+				aria-describedby="register-email-error"
+			/>
+		</div>
+		<p class="auth-error" id="register-email-error" aria-live="polite"></p>
+	</div>
+
+	<div class="auth-field">
+		<label for="register-password">Contraseña</label>
+		<div class="auth-control auth-control--password">
+			<input
+				class="auth-input"
+				id="register-password"
+				name="password"
+				type="password"
+				autocomplete="new-password"
+				placeholder="Mínimo 8 caracteres"
+				minlength="8"
+				required
+				data-required-msg="Crea una contraseña."
+				aria-describedby="register-password-error"
+			/>
+			<button
+				type="button"
+				class="auth-toggle-password"
+				aria-label="Mostrar contraseña"
+				aria-controls="register-password"
+				aria-pressed="false"
+			>
+				Mostrar
+			</button>
+		</div>
+		<p class="auth-error" id="register-password-error" aria-live="polite"></p>
+	</div>
+
+	<div class="auth-field">
+		<label for="register-password-confirm">Confirmar contraseña</label>
+		<div class="auth-control">
+			<input
+				class="auth-input"
+				id="register-password-confirm"
+				name="password_confirm"
+				type="password"
+				autocomplete="new-password"
+				placeholder="Repite tu contraseña"
+				required
+				data-required-msg="Confirma tu contraseña."
+				data-match="register-password"
+				aria-describedby="register-password-confirm-error"
+			/>
+		</div>
+		<p class="auth-error" id="register-password-confirm-error" aria-live="polite"></p>
+	</div>
+
+	<div class="auth-field">
+		<div class="auth-check">
+			<input
+				id="register-terms"
+				type="checkbox"
+				name="terms"
+				required
+				data-required-msg="Debes aceptar los términos para continuar."
+				aria-describedby="register-terms-error"
+			/>
+			<span>
+				<label for="register-terms">Acepto los</label>{" "}
+				<button type="button" class="auth-link" data-open-terms>
+					términos y la política de privacidad
+				</button>
+			</span>
+		</div>
+		<p class="auth-error" id="register-terms-error" aria-live="polite"></p>
+	</div>
+
+	<button type="submit" class="auth-submit">Crear cuenta</button>
+
+	<p class="auth-status" role="status" aria-live="polite"></p>
+</form>

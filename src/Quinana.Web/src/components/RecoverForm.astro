@@ -1,0 +1,38 @@
+---
+// Formulario para recuperar la contraseña. Estilos en src/styles/auth.css y
+// validación en src/scripts/auth-forms.ts.
+---
+
+<form class="auth-form" id="recover-form" novalidate>
+	<div class="auth-field">
+		<label for="recover-email">Correo electrónico</label>
+		<div class="auth-control">
+			<input
+				class="auth-input"
+				id="recover-email"
+				name="email"
+				type="email"
+				autocomplete="email"
+				placeholder="tucorreo@ejemplo.com"
+				required
+				data-required-msg="Ingresa el correo con el que te registraste."
+				aria-describedby="recover-email-error"
+			/>
+		</div>
+		<p class="auth-error" id="recover-email-error" aria-live="polite"></p>
+	</div>
+
+	<button type="submit" class="auth-submit">Enviar enlace de recuperación</button>
+
+	<p class="auth-status" role="status" aria-live="polite"></p>
+
+	<button type="button" class="auth-link recover-back" data-go="login">
+		<span aria-hidden="true">←</span> Volver a iniciar sesión
+	</button>
+</form>
+
+<style>
+	.recover-back {
+		align-self: center;
+	}
+</style>

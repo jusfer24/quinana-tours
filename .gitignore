@@ -1,0 +1,49 @@
+# ==========================================
+# 1. SECRETOS Y VARIABLES DE ENTORNO (CRÍTICO)
+# ==========================================
+.env
+.env.*
+*.pem
+*.key
+.kushki_secrets/
+.hubspot_credentials/
+
+# ==========================================
+# 2. BASES DE DATOS (No subir datos reales/locales)
+# ==========================================
+*.sqlite3
+db.sqlite3
+/src/Quinana.Api/db.sqlite3
+
+# ==========================================
+# 3. PYTHON Y DJANGO (Backend)
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+/src/Quinana.Api/.venv/
+/src/Quinana.Api/venv/
+/src/Quinana.Api/env/
+/src/Quinana.Api/static/ 
+/src/Quinana.Api/media/
+
+# ==========================================
+# 4. NODE.JS Y ASTRO (Frontend)
+# ==========================================
+/src/Quinana.Web/node_modules/
+/src/Quinana.Web/dist/
+/src/Quinana.Web/.astro/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ==========================================
+# 5. SISTEMA OPERATIVO Y EDITORES
+# ==========================================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log

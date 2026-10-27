@@ -1,0 +1,230 @@
+/* Estilos compartidos por los formularios de acceso (inicio de sesión, registro y
+   recuperación), sobre la tarjeta blanca. Las variables de color se definen en
+   src/pages/login.astro. */
+
+/* ---------- Base (móvil primero) ---------- */
+.auth-form {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	width: 100%;
+}
+
+.auth-field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+	min-width: 0;
+}
+
+/* Etiqueta encima del campo. */
+.auth-field > label {
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--color-text);
+}
+
+/* Contenedor del campo (permite ubicar el botón "Mostrar" dentro). */
+.auth-control {
+	position: relative;
+}
+
+.auth-input {
+	width: 100%;
+	box-sizing: border-box;
+	padding: 0.8rem 1rem;
+	font: inherit;
+	font-size: 1rem; /* 16px evita el zoom automático en iOS */
+	color: var(--color-text);
+	background: var(--color-surface);
+	border: 1.5px solid var(--color-border);
+	border-radius: 0.6rem;
+	transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.auth-input::placeholder {
+	color: #9aa8a0;
+}
+
+.auth-input:hover {
+	border-color: #a9bfb0;
+}
+
+.auth-input:focus-visible {
+	outline: none;
+	border-color: var(--color-primary);
+	box-shadow: 0 0 0 3px var(--color-focus);
+}
+
+.auth-input[aria-invalid="true"] {
+	border-color: var(--color-error);
+}
+
+.auth-control--password .auth-input {
+	padding-right: 5.5rem;
+}
+
+.auth-toggle-password {
+	position: absolute;
+	top: 50%;
+	right: 0.4rem;
+	transform: translateY(-50%);
+	padding: 0.4rem 0.7rem;
+	font: inherit;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--color-primary);
+	background: none;
+	border: none;
+	border-radius: 0.5rem;
+	cursor: pointer;
+}
+
+.auth-toggle-password:hover {
+	background: var(--color-focus);
+}
+
+.auth-toggle-password:focus-visible {
+	outline: 2px solid var(--color-primary);
+}
+
+.auth-error {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--color-error);
+}
+
+/* Sin error no ocupa espacio. */
+.auth-error:empty {
+	display: none;
+}
+
+/* Casilla + texto (recordarme, aceptar términos). */
+.auth-check {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.55rem;
+	font-size: 0.88rem;
+	line-height: 1.45;
+	color: var(--color-text-soft);
+}
+
+.auth-check input {
+	flex: none;
+	width: 1rem;
+	height: 1rem;
+	margin: 0.15rem 0 0;
+	accent-color: var(--color-primary);
+	cursor: pointer;
+}
+
+.auth-check input[aria-invalid="true"] {
+	outline: 2px solid var(--color-error);
+	outline-offset: 1px;
+}
+
+.auth-check label {
+	cursor: pointer;
+}
+
+/* ---------- Botones ---------- */
+.auth-submit,
+.auth-secondary {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	box-sizing: border-box;
+	padding: 0.85rem 1rem;
+	font: inherit;
+	font-size: 1rem;
+	font-weight: 600;
+	border-radius: 0.6rem;
+	cursor: pointer;
+	transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+
+.auth-submit {
+	color: var(--color-on-primary);
+	background: var(--color-primary);
+	border: 1.5px solid var(--color-primary);
+}
+
+.auth-submit:hover {
+	background: var(--color-primary-hover);
+	border-color: var(--color-primary-hover);
+}
+
+.auth-secondary {
+	color: var(--color-text);
+	background: var(--color-surface);
+	border: 1.5px solid var(--color-border);
+}
+
+.auth-secondary:hover {
+	border-color: var(--color-primary);
+	background: #f6faf7;
+}
+
+.auth-submit:active,
+.auth-secondary:active {
+	transform: translateY(1px);
+}
+
+.auth-submit:focus-visible,
+.auth-secondary:focus-visible {
+	outline: 3px solid var(--color-focus-ring);
+	outline-offset: 2px;
+}
+
+.auth-status {
+	margin: 0;
+	padding: 0.7rem 0.8rem;
+	font-size: 0.88rem;
+	text-align: center;
+	color: var(--color-primary);
+	background: var(--color-focus);
+	border-radius: 0.6rem;
+}
+
+.auth-status:empty {
+	display: none;
+}
+
+.auth-link {
+	padding: 0;
+	font: inherit;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--color-accent);
+	text-align: left;
+	text-decoration: none;
+	background: none;
+	border: none;
+	cursor: pointer;
+}
+
+.auth-link:hover {
+	text-decoration: underline;
+}
+
+.auth-link:focus-visible {
+	outline: 2px solid var(--color-accent);
+	outline-offset: 2px;
+	border-radius: 2px;
+}
+
+/* "¿Olvidaste tu contraseña?" debajo del campo, alineado a la derecha. */
+.auth-forgot {
+	align-self: flex-end;
+	margin-top: 0.1rem;
+}
+
+/* ---------- Accesibilidad ---------- */
+@media (prefers-reduced-motion: reduce) {
+	.auth-input,
+	.auth-submit,
+	.auth-secondary {
+		transition: none;
+	}
+}

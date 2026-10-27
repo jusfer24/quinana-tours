@@ -1,0 +1,64 @@
+---
+// Formulario de inicio de sesión. Estilos en src/styles/auth.css y
+// validación en src/scripts/auth-forms.ts.
+---
+
+<form class="auth-form" id="login-form" novalidate>
+	<div class="auth-field">
+		<label for="login-email">Correo electrónico</label>
+		<div class="auth-control">
+			<input
+				class="auth-input"
+				id="login-email"
+				name="email"
+				type="email"
+				autocomplete="email"
+				placeholder="tucorreo@ejemplo.com"
+				required
+				data-required-msg="Ingresa tu correo electrónico."
+				aria-describedby="login-email-error"
+			/>
+		</div>
+		<p class="auth-error" id="login-email-error" aria-live="polite"></p>
+	</div>
+
+	<div class="auth-field">
+		<label for="login-password">Contraseña</label>
+		<div class="auth-control auth-control--password">
+			<input
+				class="auth-input"
+				id="login-password"
+				name="password"
+				type="password"
+				autocomplete="current-password"
+				placeholder="Tu contraseña"
+				minlength="8"
+				required
+				data-required-msg="Ingresa tu contraseña."
+				aria-describedby="login-password-error"
+			/>
+			<button
+				type="button"
+				class="auth-toggle-password"
+				aria-label="Mostrar contraseña"
+				aria-controls="login-password"
+				aria-pressed="false"
+			>
+				Mostrar
+			</button>
+		</div>
+		<p class="auth-error" id="login-password-error" aria-live="polite"></p>
+		<button type="button" class="auth-link auth-forgot" data-go="recover">
+			¿Olvidaste tu contraseña?
+		</button>
+	</div>
+
+	<div class="auth-check">
+		<input type="checkbox" id="login-remember" name="remember" />
+		<label for="login-remember">Mantener la sesión iniciada</label>
+	</div>
+
+	<button type="submit" class="auth-submit">Ingresar</button>
+
+	<p class="auth-status" role="status" aria-live="polite"></p>
+</form>

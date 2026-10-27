@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Iniciar sesión · Quinana Tours{% endblock %}
+{% block body_class %}page-auth{% endblock %}
+{% block main_class %}auth-page{% endblock %}
+
+{% block header %}
+  <a class="brand brand--corner" href="{% url 'login' %}">Quinana Tours</a>
+{% endblock %}
+
+{% block content %}
+  <div class="auth-frame">
+    <section class="auth-content" aria-labelledby="login-title">
+      <h1 id="login-title">Iniciar sesión</h1>
+      <p class="muted">Accede al panel de gestión de tours.</p>
+
+      {% if next and not user.is_authenticated %}
+        <p class="alert alert--info">Debes iniciar sesión para acceder a esa página.</p>
+      {% endif %}
+
+      {% if form.non_field_errors %}
+        <div class="alert alert--error" role="alert">
+          {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+        </div>
+      {% endif %}
+
+      <form method="post" action="{% url 'login' %}" class="form">
+        {% csrf_token %}
+
+        <div class="field">
+          <label for="{{ form.username.id_for_label }}">Usuario</label>
+          <input
+            class="form-input"
+            type="text"
+            name="{{ form.username.html_name }}"
+            id="{{ form.username.id_for_label }}"
+            value="{{ form.username.value|default_if_none:'' }}"
+            autocomplete="username"
+            autofocus
+            required
+          >
+        </div>
+
+        <div class="field">
+          <label for="{{ form.password.id_for_label }}">Contraseña</label>
+          <div class="password">
+            <input
+              class="form-input"
+              type="password"
+              name="{{ form.password.html_name }}"
+              id="{{ form.password.id_for_label }}"
+              autocomplete="current-password"
+              required
+            >
+            <button type="button" class="password-toggle" aria-controls="{{ form.password.id_for_label }}" aria-pressed="false">Mostrar</button>
+          </div>
+        </div>
+
+        {# Página protegida a la que volver tras iniciar sesión. #}
+        <input type="hidden" name="next" value="{{ next }}">
+
+        <button type="submit" class="btn btn-primary btn-block">Ingresar</button>
+      </form>
+    </section>
+
+    <figure class="auth-photo">
+      <img src="{% static 'img/quilotoa.webp' %}" alt="Laguna del Quilotoa, un lago de cráter turquesa rodeado de montañas en los Andes de Ecuador">
+      <figcaption>
+        <p class="auth-photo-title">Tu próxima aventura empieza aquí</p>
+        <span class="pill">Laguna del Quilotoa, Ecuador</span>
+      </figcaption>
+    </figure>
+  </div>
+
+  <script>
+    // Botón "Mostrar / Ocultar" contraseña.
+    document.querySelectorAll(".password-toggle").forEach((button) => {
+      const input = document.getElementById(button.getAttribute("aria-controls"));
+      button.addEventListener("click", () => {
+        const visible = input.type === "text";
+        input.type = visible ? "password" : "text";
+        button.textContent = visible ? "Mostrar" : "Ocultar";
+        button.setAttribute("aria-pressed", String(!visible));
+      });
+    });
+  </script>
+{% endblock %}
