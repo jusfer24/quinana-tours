@@ -1,0 +1,34 @@
+# Despliegue de la API Django en Render (plan gratuito) como "Blueprint".
+# Render lee este archivo al conectar el repositorio: New > Blueprint.
+# La base de datos es PostgreSQL en Neon (gratis); su cadena de conexión va en DATABASE_URL.
+# Las variables con sync: false se escriben a mano en el panel de Render al crear el servicio.
+services:
+  - type: web
+    name: quinana-api
+    runtime: python
+    plan: free
+    rootDir: src/Quinana.Api
+    buildCommand: >-
+      pip install -r requirements.txt &&
+      python manage.py collectstatic --noinput &&
+      python manage.py migrate --noinput
+    startCommand: gunicorn config.wsgi:application
+    healthCheckPath: /api/tours/
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.7
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      # Front y API en dominios distintos (*.pages.dev y *.onrender.com).
+      - key: COOKIE_SAMESITE
+        value: None
+      # Cadena de conexión de Neon (postgresql://...?sslmode=require).
+      - key: DATABASE_URL
+        sync: false
+      # URL del sitio Astro, p. ej. https://quinana-tours.pages.dev
+      - key: FRONTEND_ORIGINS
+        sync: false
+      - key: FRONTEND_URL
+        sync: false

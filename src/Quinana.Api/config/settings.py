@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
 import sys
+
+import dj_database_url
 from dotenv import load_dotenv
 from pathlib import Path
 
@@ -35,9 +37,17 @@ LOGOUT_REDIRECT_URL = 'login'
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# En local queda activo si no se define; en producción (render.yaml) se pone DJANGO_DEBUG=False.
+DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+    if host.strip()
+]
+# Render publica el dominio del servicio (quinana-api.onrender.com) en esta variable.
+if os.getenv('RENDER_EXTERNAL_HOSTNAME'):
+    ALLOWED_HOSTS.append(os.environ['RENDER_EXTERNAL_HOSTNAME'])
 
 # Sitio público (Astro). Va en otro origen, así que necesita CORS con cookies y que
 # Django confíe en él para CSRF. En producción, definir FRONTEND_ORIGINS en el .env
@@ -56,6 +66,15 @@ CORS_ALLOWED_ORIGINS = FRONTEND_ORIGINS
 CORS_ALLOW_CREDENTIALS = True
 CORS_URLS_REGEX = r'^/api/.*$'
 CSRF_TRUSTED_ORIGINS = FRONTEND_ORIGINS
+
+# Producción: cookies solo por HTTPS. Si el front y la API están en dominios distintos
+# (p. ej. *.pages.dev y *.onrender.com), definir COOKIE_SAMESITE=None para que el
+# navegador envíe la sesión; Safari puede bloquearla igual hasta tener dominio propio.
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')  # Render termina el HTTPS
+    SESSION_COOKIE_SAMESITE = CSRF_COOKIE_SAMESITE = os.getenv('COOKIE_SAMESITE', 'Lax')
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -82,6 +101,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # sirve static/ en producción
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',  # antes de CommonMiddleware
     'django.middleware.common.CommonMiddleware',
@@ -121,11 +141,13 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# PostgreSQL en producción con DATABASE_URL (p. ej. la cadena de conexión de Neon);
+# sin esa variable se usa SQLite local.
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600,
+    )
 }
 
 
@@ -165,6 +187,11 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # salida de collectstatic (ignorada en git)
+STORAGES = {
+    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+    'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage'},
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
