@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Catálogo de tours · Quinana Tours{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="card-header">
+      <h1>Catálogo de experiencias</h1>
+      <a href="{% url 'tour_create' %}" class="btn btn-primary">+ Nuevo tour</a>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Título</th>
+            <th scope="col">Destino</th>
+            <th scope="col">Duración</th>
+            <th scope="col">Precio (USD)</th>
+            <th scope="col">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for tour in tours %}
+            <tr>
+              <td>{{ tour.title }}</td>
+              <td>{{ tour.destination }}</td>
+              <td>{{ tour.duration }}</td>
+              <td>Desde ${{ tour.price_usd }} USD / persona</td>
+              <td class="actions">
+                <a href="{% url 'tour_update' tour.pk %}" class="link">Editar</a>
+                <a href="{% url 'tour_delete' tour.pk %}" class="link link--danger">Eliminar</a>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="5" class="empty">No hay tours registrados.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}
