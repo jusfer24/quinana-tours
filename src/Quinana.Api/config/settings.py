@@ -39,6 +39,29 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# Sitio público (Astro). Va en otro origen, así que necesita CORS con cookies y que
+# Django confíe en él para CSRF. En producción, definir FRONTEND_ORIGINS en el .env
+# (separados por comas). El front y la API deben compartir dominio (p. ej.
+# quinanatours.com y api.quinanatours.com) para que el navegador envíe la cookie de sesión.
+FRONTEND_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv(
+        'FRONTEND_ORIGINS', 'http://localhost:4321,http://localhost:4322'
+    ).split(',')
+    if origin.strip()
+]
+CORS_ALLOWED_ORIGINS = FRONTEND_ORIGINS
+CORS_ALLOW_CREDENTIALS = True
+CORS_URLS_REGEX = r'^/api/.*$'
+CSRF_TRUSTED_ORIGINS = FRONTEND_ORIGINS
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_RENDERER_CLASSES': ['rest_framework.renderers.JSONRenderer'],
+}
+
 
 # Application definition
 
@@ -49,12 +72,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    "rest_framework",
+    "corsheaders",
     "tours",
+    "accounts",
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # antes de CommonMiddleware
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',

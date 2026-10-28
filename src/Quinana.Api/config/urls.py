@@ -4,6 +4,7 @@
 - /logout/  Cierre de sesión (solo POST, por seguridad).
 - /tours/   CRUD de tours: sección protegida, requiere sesión iniciada.
 - /admin/   Panel de administración de Django.
+- /api/auth/  API de acceso de los viajeros del sitio público (Astro).
 """
 
 from django.contrib import admin
@@ -24,4 +25,5 @@ urlpatterns = [
     ),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
     path("tours/", include("tours.urls")),
+    path("api/auth/", include("accounts.urls")),
 ]
