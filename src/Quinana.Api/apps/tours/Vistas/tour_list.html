@@ -6,7 +6,7 @@
   <div class="card">
     <div class="card-header">
       <h1>Catálogo de experiencias</h1>
-      <a href="{% url 'tour_create' %}" class="btn btn-primary">+ Nuevo tour</a>
+      {% if perms.tours.add_tour %}<a href="{% url 'tour_create' %}" class="btn btn-primary">+ Nuevo tour</a>{% endif %}
     </div>
 
     <div class="table-wrapper">
@@ -25,11 +25,11 @@
             <tr>
               <td>{{ tour.title }}</td>
               <td>{{ tour.destination }}</td>
-              <td>{{ tour.duration }}</td>
+              <td>{{ tour.duration_label }}</td>
               <td>Desde ${{ tour.price_usd }} USD / persona</td>
               <td class="actions">
-                <a href="{% url 'tour_update' tour.pk %}" class="link">Editar</a>
-                <a href="{% url 'tour_delete' tour.pk %}" class="link link--danger">Eliminar</a>
+                {% if perms.tours.change_tour %}<a href="{% url 'tour_update' tour.pk %}" class="link">Editar</a>{% endif %}
+                {% if perms.tours.delete_tour %}<a href="{% url 'tour_delete' tour.pk %}" class="link link--danger">Eliminar</a>{% endif %}
               </td>
             </tr>
           {% empty %}

@@ -1,12 +1,12 @@
 """Controladores (C del patrón MVC) del CRUD de tours.
 
-Todas las vistas heredan de LoginRequiredMixin: si el usuario no ha iniciado sesión,
-Django lo redirige a LOGIN_URL (/login/) y, tras autenticarse, lo devuelve a la página
-que intentaba abrir (parámetro ?next=).
+Todas las vistas heredan de PermissionRequiredMixin: sin sesión, Django redirige a
+LOGIN_URL (/login/) y, tras autenticarse, devuelve al usuario a la página que intentaba
+abrir (?next=). Con sesión pero sin el permiso del modelo, responde 403.
 """
 
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
@@ -16,15 +16,20 @@ from .models import Tour
 
 
 # R - Read (Listar tours)
-class TourListView(LoginRequiredMixin, ListView):
+class TourListView(PermissionRequiredMixin, ListView):
+    permission_required = "tours.view_tour"
     model = Tour
     template_name = "tour_list.html"
     context_object_name = "tours"
     ordering = ["-created_at"]
 
+    def get_queryset(self):
+        return super().get_queryset().select_related("destination")
+
 
 # C - Create (Crear tour)
-class TourCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+class TourCreateView(PermissionRequiredMixin, SuccessMessageMixin, CreateView):
+    permission_required = "tours.add_tour"
     model = Tour
     form_class = TourForm
     template_name = "tour_form.html"
@@ -38,7 +43,8 @@ class TourCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 
 
 # U - Update (Actualizar tour)
-class TourUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class TourUpdateView(PermissionRequiredMixin, SuccessMessageMixin, UpdateView):
+    permission_required = "tours.change_tour"
     model = Tour
     form_class = TourForm
     template_name = "tour_form.html"
@@ -52,7 +58,8 @@ class TourUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
 
 
 # D - Delete (Eliminar tour)
-class TourDeleteView(LoginRequiredMixin, DeleteView):
+class TourDeleteView(PermissionRequiredMixin, DeleteView):
+    permission_required = "tours.delete_tour"
     model = Tour
     template_name = "tour_confirm_delete.html"
     context_object_name = "tour"
