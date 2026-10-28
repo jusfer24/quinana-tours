@@ -6,6 +6,9 @@ import tailwindcss from '@tailwindcss/vite';
 
 // https://astro.build/config
 export default defineConfig({
+  // Dominio público: lo usan las etiquetas hreflang. Cambiarlo cuando haya dominio propio.
+  site: 'https://quinana-tours.pages.dev',
+
   integrations: [react()],
 
   // Sitio bilingüe: español en la raíz (/) e inglés en /en/.
