@@ -1,0 +1,629 @@
+/* Estilos del panel interno (login y CRUD de tours).
+   Misma paleta "Selva y tierra" y mismos componentes que el acceso del sitio Astro
+   (src/Quinana.Web/src/pages/login.astro y src/styles/auth.css), para que ambos se
+   vean iguales. Para cambiar los colores basta con editar :root. */
+
+:root {
+  --color-page: #134e4a; /* fondo de la página: verde azulado */
+  --color-page-deep: #0b3533;
+  --color-page-light: rgba(250, 243, 228, 0.1); /* luces crema muy tenues */
+  --color-heading: #1f3d2b; /* verde bosque: títulos */
+  --color-surface: #ffffff;
+  --color-primary: #1f3d2b;
+  --color-primary-hover: #2e5a3f;
+  --color-on-primary: #ffffff;
+  --color-accent: #c2562e; /* terracota: enlaces */
+  --color-text: #1b2420;
+  --color-text-soft: #5d6b63;
+  --color-border: #cddbd1;
+  --color-focus: rgba(46, 90, 63, 0.12);
+  --color-focus-ring: rgba(46, 90, 63, 0.35);
+  --color-error: #b42318;
+  --color-error-soft: #fdecea;
+  --color-success-soft: #e7f3ec;
+  --glass-strong: rgba(255, 255, 255, 0.85);
+  --glass-soft: rgba(255, 255, 255, 0.78);
+  --glass-border: rgba(255, 255, 255, 0.6);
+  --glass-blur: blur(22px) saturate(160%);
+  --radius: 0.6rem;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5;
+  color: var(--color-text);
+  /* Verde azulado con dos luces crema tenues, igual que el acceso del sitio público. */
+  background:
+    radial-gradient(ellipse 60% 50% at 12% 8%, var(--color-page-light), transparent 70%),
+    radial-gradient(ellipse 55% 45% at 90% 95%, var(--color-page-light), transparent 70%),
+    linear-gradient(155deg, var(--color-page) 0%, var(--color-page-deep) 100%);
+  background-attachment: fixed;
+}
+
+h1 {
+  margin: 0 0 1rem;
+  font-size: 1.6rem;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--color-heading);
+}
+
+.muted {
+  margin: 0 0 1.25rem;
+  color: var(--color-text-soft);
+}
+
+/* ---------- Barra superior ---------- */
+.topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 1.25rem 1rem;
+}
+
+.brand {
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #fff;
+  text-decoration: none;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.3);
+}
+
+.brand:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+.topbar-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.topbar-user form {
+  margin: 0;
+}
+
+/* ---------- Contenido ---------- */
+.container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 1rem 2.5rem;
+}
+
+.card {
+  padding: 1.5rem;
+  background: var(--glass-strong);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: 1.5rem;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.3);
+}
+
+.card--narrow {
+  max-width: 640px;
+  margin-inline: auto;
+}
+
+.card--center {
+  text-align: center;
+}
+
+.card-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.card-header h1 {
+  margin: 0;
+}
+
+/* ---------- Mensajes ---------- */
+.messages {
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.messages .alert + .alert {
+  margin-top: 0.5rem;
+}
+
+.alert {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  color: var(--color-primary);
+  background: var(--color-success-soft);
+  border: 1px solid #c3dfcd;
+  border-radius: var(--radius);
+}
+
+.messages .alert {
+  margin: 0;
+}
+
+.alert--info {
+  background: #eef4f8;
+  border-color: #cfe0ea;
+  color: #234556;
+}
+
+.alert--error,
+.alert--warning {
+  color: var(--color-error);
+  background: var(--color-error-soft);
+  border-color: #f5c2bd;
+}
+
+/* ---------- Tabla del catálogo ---------- */
+.table-wrapper {
+  overflow-x: auto;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.table th,
+.table td {
+  padding: 0.85rem 1rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid #e6eee9;
+}
+
+.table th {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-soft);
+  background: #f4f7f5;
+  white-space: nowrap;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table tbody tr:hover {
+  background: #f8fbf9;
+}
+
+.actions {
+  white-space: nowrap;
+}
+
+.actions .link + .link {
+  margin-left: 0.9rem;
+}
+
+.empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--color-text-soft);
+}
+
+.link {
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.link--danger {
+  color: var(--color-error);
+}
+
+/* ---------- Formularios ---------- */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.field > label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  font: inherit;
+  font-size: 1rem; /* 16px evita el zoom automático en iOS */
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+textarea.form-input {
+  min-height: 7rem;
+  resize: vertical;
+}
+
+.form-input::placeholder {
+  color: #9aa8a0;
+}
+
+.form-input:hover {
+  border-color: #a9bfb0;
+}
+
+.form-input:focus-visible {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-focus);
+}
+
+.field-error {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--color-error);
+}
+
+.field:has(.field-error) .form-input {
+  border-color: var(--color-error);
+}
+
+/* Contraseña con botón "Mostrar" dentro del campo. */
+.password {
+  position: relative;
+}
+
+.password .form-input {
+  padding-right: 5.5rem;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.4rem;
+  transform: translateY(-50%);
+  padding: 0.4rem 0.7rem;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.password-toggle:hover {
+  background: var(--color-focus);
+}
+
+.password-toggle:focus-visible {
+  outline: 2px solid var(--color-primary);
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.form-actions--center {
+  justify-content: center;
+}
+
+/* ---------- Botones ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.25rem;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  border: 1.5px solid transparent;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.btn-block {
+  width: 100%;
+  padding-block: 0.85rem;
+  font-size: 1rem;
+}
+
+.btn-primary {
+  color: var(--color-on-primary);
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.btn-primary:hover {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+.btn-secondary {
+  color: var(--color-text);
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+.btn-secondary:hover {
+  background: #f6faf7;
+  border-color: var(--color-primary);
+}
+
+.btn-danger {
+  color: #fff;
+  background: var(--color-error);
+  border-color: var(--color-error);
+}
+
+.btn-danger:hover {
+  background: #912018;
+  border-color: #912018;
+}
+
+/* Sobre la barra superior verde. */
+.btn-ghost {
+  padding: 0.5rem 0.9rem;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* =====================================================================
+   Página de inicio de sesión
+   Móvil: la foto arriba como banner. Escritorio (≥ 960px): dos columnas.
+   ===================================================================== */
+.auth-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 4rem 0.75rem 0.75rem; /* arriba: espacio para la marca */
+}
+
+.brand--corner {
+  position: absolute;
+  top: 1.4rem;
+  left: 1.25rem;
+  z-index: 1;
+}
+
+.auth-frame {
+  display: flex;
+  flex-direction: column-reverse; /* en móvil la foto queda arriba */
+  width: 100%;
+  padding: 0.6rem;
+  background: var(--glass-strong);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: 1.5rem;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.3);
+}
+
+.auth-content {
+  width: 100%;
+  max-width: 400px;
+  margin-inline: auto;
+  padding: 1.5rem 0.9rem 1.25rem;
+}
+
+.auth-content h1 {
+  margin-bottom: 0.5rem;
+  font-size: 2rem;
+}
+
+.auth-photo {
+  position: relative;
+  height: 210px;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 1.1rem;
+}
+
+.auth-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 45%;
+}
+
+/* Degradado para que el texto blanco sea legible sobre la foto. */
+.auth-photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 45%, rgba(10, 25, 16, 0.65) 100%);
+  pointer-events: none;
+}
+
+.auth-photo figcaption {
+  position: absolute;
+  right: 1rem;
+  bottom: 0.9rem;
+  left: 1rem;
+  z-index: 1;
+  color: #fff;
+}
+
+.auth-photo-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.3rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.pill {
+  display: inline-block;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-heading);
+  background: var(--glass-soft);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+}
+
+/* ---------- Tableta (≥ 640px) ---------- */
+@media (min-width: 640px) {
+  .topbar,
+  .container {
+    padding-inline: 2rem;
+  }
+
+  .card {
+    padding: 2rem;
+    border-radius: 1.75rem;
+  }
+
+  .auth-page {
+    justify-content: center;
+    padding: 4.5rem 2rem 2rem;
+  }
+
+  .brand--corner {
+    top: 1.75rem;
+    left: 2rem;
+  }
+
+  .auth-frame {
+    max-width: 600px;
+    padding: 0.75rem;
+    border-radius: 1.75rem;
+  }
+
+  .auth-content {
+    padding: 2rem 1.5rem 1.5rem;
+  }
+
+  .auth-photo {
+    height: 260px;
+    border-radius: 1.25rem;
+  }
+}
+
+/* ---------- Escritorio (≥ 960px) ---------- */
+@media (min-width: 960px) {
+  .auth-page {
+    padding: 5rem 4vw 2.5rem;
+  }
+
+  .brand--corner {
+    top: 2rem;
+    left: 4vw;
+  }
+
+  .auth-frame {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    max-width: 1180px;
+    height: min(760px, calc(100dvh - 7.5rem));
+    padding: 0.9rem;
+    border-radius: 2rem;
+  }
+
+  .auth-content {
+    align-self: center;
+    max-width: 440px;
+    padding: 2rem 2.5rem;
+  }
+
+  .auth-content h1 {
+    font-size: 2.5rem;
+  }
+
+  .auth-photo {
+    height: auto;
+    border-radius: 1.5rem;
+  }
+
+  .auth-photo figcaption {
+    right: 1.75rem;
+    bottom: 1.75rem;
+    left: 1.75rem;
+  }
+
+  .auth-photo-title {
+    max-width: 18rem;
+    font-size: 2rem;
+  }
+
+  .pill {
+    font-size: 0.85rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .form-input,
+  .btn {
+    transition: none;
+  }
+}
