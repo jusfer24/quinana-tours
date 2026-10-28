@@ -197,6 +197,11 @@ import quilotoa from "../assets/quilotoa.jpg";
 </script>
 
 <style is:global>
+	/* Transición suave al navegar desde/hacia la página principal (ver global.css). */
+	@view-transition {
+		navigation: auto;
+	}
+
 	:root {
 		/* Paleta "Selva y tierra". Para cambiar los colores del acceso basta con editar este bloque. */
 		--color-page: #134e4a; /* fondo de la página: verde azulado */

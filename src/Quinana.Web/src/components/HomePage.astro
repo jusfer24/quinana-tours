@@ -1,0 +1,331 @@
+---
+// Página principal pública, compartida por / (español) y /en/ (inglés).
+// Los tours vienen del CRUD de Django (/api/tours/) y cada uno toma la foto de su región.
+// El filtro de tours y los puntos del perfil de altitud filtran en el navegador.
+import { Image } from "astro:assets";
+import banner from "../assets/destinos/cotopaxi-banner.jpg";
+import quilotoa from "../assets/quilotoa.jpg";
+import { t, type Lang } from "../i18n/ui";
+import Layout from "../layouts/Layout.astro";
+import { regionFor, regions } from "../lib/regions";
+import { fetchTours, formatPrice } from "../lib/tours";
+import PerfilAltitud from "./PerfilAltitud.astro";
+
+interface Props {
+	lang: Lang;
+}
+
+const { lang } = Astro.props;
+const text = t(lang);
+const tours = await fetchTours();
+// Los tours solo existen en español: en /en/ se marcan con lang="es" para lectores de pantalla.
+const tourLang = lang === "es" ? undefined : "es";
+
+// Por región: cuántos tours hay y desde qué precio (datos reales del CRUD).
+const regionStats = regions.map((region) => {
+	const prices = tours.filter((tour) => tour.destination === region.name).map((tour) => Number(tour.price_usd));
+	return { ...region, count: prices.length, from: prices.length ? Math.min(...prices) : null };
+});
+
+const selectClass =
+	"mt-1 w-full cursor-pointer rounded-lg border border-borde bg-white px-3 py-2.5 text-sm font-medium text-tinta hover:border-selva";
+---
+
+<Layout title={text.meta.title} description={text.meta.description}>
+	<!-- ===================== Portada ===================== -->
+	<section class="relative isolate flex min-h-[min(78svh,760px)] items-end overflow-hidden bg-laguna-profundo">
+		<Image
+			src={quilotoa}
+			alt={text.hero.imageAlt}
+			class="absolute inset-0 -z-20 h-full w-full object-cover object-right"
+			widths={[640, 1024, 1600, 2200]}
+			sizes="100vw"
+			loading="eager"
+			fetchpriority="high"
+		/>
+		<div class="absolute inset-0 -z-10 bg-gradient-to-t from-laguna-profundo/90 via-laguna-profundo/45 to-transparent md:bg-gradient-to-tr"></div>
+
+		<div class="mx-auto w-full max-w-6xl px-4 pt-32 pb-14 text-white sm:px-6 md:pb-20">
+			<h1 class="max-w-3xl text-5xl leading-[0.98] font-extrabold tracking-tight sm:text-6xl md:text-7xl">
+				{text.hero.title}
+			</h1>
+			<p class="mt-6 max-w-xl text-lg leading-relaxed text-white/85">{text.hero.text}</p>
+			<div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
+				<a
+					href="#cotizar"
+					class="rounded-full bg-terracota px-7 py-3.5 font-semibold text-white transition-colors hover:bg-terracota-oscuro"
+				>
+					{text.hero.primary}
+				</a>
+				<a href="#tours" class="font-semibold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white">
+					{text.hero.secondary}
+				</a>
+			</div>
+		</div>
+	</section>
+
+	<!-- ===================== Perfil de altitud y destinos ===================== -->
+	<section id="destinos" class="mx-auto max-w-6xl px-4 pt-20 sm:px-6 md:pt-28">
+		<div class="max-w-2xl">
+			<h2 class="text-4xl font-extrabold tracking-tight text-selva md:text-5xl">{text.profile.title}</h2>
+			<p class="mt-4 text-lg leading-relaxed text-musgo">{text.profile.text}</p>
+		</div>
+
+		<div class="mt-16 md:mt-20">
+			<PerfilAltitud lang={lang} />
+		</div>
+
+		<ul class="mt-10 grid grid-cols-2 gap-x-5 gap-y-10 lg:grid-cols-4">
+			{
+				regionStats.map((region) => (
+					<li>
+						<a href="#tours" data-region={region.name} class="group block">
+							<div class="aspect-[4/5] overflow-hidden rounded-xl bg-crema">
+								<Image
+									src={region.image}
+									alt={region.alt[lang]}
+									widths={[320, 560]}
+									sizes="(min-width: 1024px) 25vw, 50vw"
+									class="h-full w-full object-cover transition-transform duration-700 ease-[var(--ease-suave)] group-hover:scale-105"
+								/>
+							</div>
+							<h3 class="mt-4 text-xl font-bold text-selva group-hover:text-terracota">{region.label[lang]}</h3>
+							<p class="mt-0.5 text-sm text-musgo">{region.tagline[lang]}</p>
+							<p class="mt-2 text-sm font-semibold text-tinta">
+								{region.count > 0 && region.from !== null
+									? `${text.profile.tours(region.count)}, ${text.profile.from} ${formatPrice(String(region.from))}`
+									: text.profile.noTours}
+							</p>
+						</a>
+					</li>
+				))
+			}
+		</ul>
+	</section>
+
+	<!-- ===================== Tours (CRUD de Django) ===================== -->
+	<section id="tours" class="mx-auto max-w-6xl px-4 pt-24 sm:px-6 md:pt-32">
+		<div class="flex flex-wrap items-end justify-between gap-4">
+			<div class="max-w-2xl">
+				<h2 class="text-4xl font-extrabold tracking-tight text-selva md:text-5xl">{text.tours.title}</h2>
+				<p class="mt-4 text-lg leading-relaxed text-musgo">{text.tours.text}</p>
+			</div>
+		</div>
+
+		<form id="tour-search" class="mt-10 grid gap-4 border-y border-borde py-5 sm:grid-cols-3 lg:grid-cols-[1fr_1fr_1fr_auto] lg:items-end">
+			<label class="block text-xs font-semibold text-musgo">
+				{text.tours.destination}
+				<select name="destino" class={selectClass}>
+					<option value="">{text.tours.anyDestination}</option>
+					{regions.map((region) => <option value={region.name}>{region.label[lang]}</option>)}
+				</select>
+			</label>
+			<label class="block text-xs font-semibold text-musgo">
+				{text.tours.duration}
+				<select name="duracion" class={selectClass}>
+					<option value="">{text.tours.anyDuration}</option>
+					<option value="1-3">{text.tours.upTo3}</option>
+					<option value="4-5">{text.tours.from4to5}</option>
+					<option value="6-99">{text.tours.from6}</option>
+				</select>
+			</label>
+			<label class="block text-xs font-semibold text-musgo">
+				{text.tours.budget}
+				<select name="presupuesto" class={selectClass}>
+					<option value="">{text.tours.anyBudget}</option>
+					<option value="0-700">{text.tours.upTo700}</option>
+					<option value="700-1500">{text.tours.from700to1500}</option>
+					<option value="1500-999999">{text.tours.over1500}</option>
+				</select>
+			</label>
+			<p class="text-sm text-musgo sm:col-span-3 lg:col-span-1 lg:pb-2.5" aria-live="polite">
+				<span id="tour-count" class="font-semibold text-tinta">{tours.length}</span>{" "}{text.tours.count}
+				<button id="tour-clear" type="button" class="ml-3 font-semibold text-terracota hover:underline" hidden>
+					{text.tours.clear}
+				</button>
+			</p>
+		</form>
+
+		{
+			tours.length > 0 ? (
+				<ul id="tour-list" class="mt-10 grid gap-x-6 gap-y-12 md:grid-cols-2 lg:grid-cols-3">
+					{tours.map((tour) => {
+						const region = regionFor(tour.destination);
+						return (
+							<li
+								data-tour
+								data-destino={tour.destination}
+								data-dias={tour.duration_days}
+								data-precio={tour.price_usd}
+								style={`view-transition-name: tour-${tour.id}`}
+								class="flex flex-col"
+							>
+								<div class="aspect-[3/2] overflow-hidden rounded-xl bg-crema">
+									{region && (
+										<Image
+											src={region.image}
+											alt=""
+											widths={[400, 700]}
+											sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+											class="h-full w-full object-cover"
+										/>
+									)}
+								</div>
+								<p class="mt-4 flex gap-3 text-sm font-semibold">
+									<span class="text-terracota">{region ? region.label[lang] : tour.destination}</span>
+									<span class="text-musgo">{text.tours.days(tour.duration_days)}</span>
+								</p>
+								<h3 class="mt-1.5 text-xl leading-snug font-bold text-tinta" lang={tourLang}>
+									{tour.title}
+								</h3>
+								<p class="mt-2 line-clamp-3 flex-1 leading-relaxed text-musgo" lang={tourLang}>
+									{tour.description}
+								</p>
+								<div class="mt-5 flex items-end justify-between gap-3 border-t border-borde pt-4">
+									<p class="text-xs text-musgo">
+										<span class="block font-display text-2xl font-extrabold text-selva">{formatPrice(tour.price_usd)}</span>
+										{text.tours.perPerson}
+									</p>
+									<a
+										href="#cotizar"
+										class="rounded-full border border-selva px-4 py-2 text-sm font-semibold text-selva transition-colors hover:bg-selva hover:text-white"
+									>
+										{text.tours.ask}
+									</a>
+								</div>
+							</li>
+						);
+					})}
+				</ul>
+			) : (
+				<p class="mt-10 rounded-xl bg-crema p-10 text-center text-musgo">{text.tours.empty}</p>
+			)
+		}
+		<p id="tour-empty" class="mt-10 rounded-xl bg-crema p-10 text-center text-musgo" hidden>
+			{text.tours.noMatch}
+			<a href="#cotizar" class="font-semibold text-terracota hover:underline">{text.tours.noMatchCta}</a>
+		</p>
+	</section>
+
+	<!-- ===================== Cómo funciona ===================== -->
+	<section id="como-funciona" class="mt-24 bg-crema md:mt-32">
+		<div class="mx-auto max-w-6xl px-4 py-20 sm:px-6 md:py-24">
+			<div class="max-w-2xl">
+				<h2 class="text-4xl font-extrabold tracking-tight text-selva md:text-5xl">{text.how.title}</h2>
+				<p class="mt-4 text-lg leading-relaxed text-musgo">{text.how.text}</p>
+			</div>
+			<ol class="mt-12 grid gap-10 md:grid-cols-3 md:gap-8">
+				{
+					text.how.steps.map((step, index) => (
+						<li class="border-t-2 border-selva pt-5">
+							<span class="font-display text-4xl font-extrabold text-terracota">{index + 1}</span>
+							<h3 class="mt-3 text-xl font-bold text-tinta">{step.title}</h3>
+							<p class="mt-2 max-w-xs leading-relaxed text-musgo">{step.text}</p>
+						</li>
+					))
+				}
+			</ol>
+		</div>
+	</section>
+
+	<!-- ===================== Antes de viajar ===================== -->
+	<section class="mx-auto grid max-w-6xl gap-10 px-4 py-24 sm:px-6 md:py-32 lg:grid-cols-[1fr_2fr]">
+		<h2 class="text-4xl font-extrabold tracking-tight text-selva md:text-5xl">{text.tips.title}</h2>
+		<dl class="grid gap-8 sm:grid-cols-2">
+			{
+				text.tips.items.map((tip, index) => (
+					<div class:list={[index === 0 && "sm:col-span-2"]}>
+						<dt class="font-display text-xl font-bold text-tinta">{tip.title}</dt>
+						<dd class="mt-2 max-w-prose leading-relaxed text-musgo">{tip.text}</dd>
+					</div>
+				))
+			}
+		</dl>
+	</section>
+
+	<!-- ===================== Llamado a cotizar ===================== -->
+	<!-- El formulario de cotización (React + API de leads) es la siguiente feature. -->
+	<section id="cotizar" class="relative isolate overflow-hidden bg-selva">
+		<Image
+			src={banner}
+			alt={text.cta.imageAlt}
+			widths={[640, 1024, 1600]}
+			sizes="100vw"
+			class="absolute inset-0 -z-20 h-full w-full object-cover"
+		/>
+		<div class="absolute inset-0 -z-10 bg-gradient-to-r from-selva via-selva/85 to-selva/30"></div>
+		<div class="mx-auto max-w-6xl px-4 py-24 text-white sm:px-6 md:py-32">
+			<h2 class="max-w-xl text-4xl leading-tight font-extrabold tracking-tight md:text-5xl">{text.cta.title}</h2>
+			<p class="mt-5 max-w-md text-lg leading-relaxed text-white/85">{text.cta.text}</p>
+			<div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
+				<a
+					href="/login#registro"
+					class="rounded-full bg-terracota px-7 py-3.5 font-semibold text-white transition-colors hover:bg-terracota-oscuro"
+				>
+					{text.cta.register}
+				</a>
+				<a href="/login#iniciar-sesion" class="font-semibold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white">
+					{text.cta.login}
+				</a>
+			</div>
+		</div>
+	</section>
+</Layout>
+
+<script>
+	const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+	// ---------- Filtro de tours ----------
+	const form = document.getElementById("tour-search") as HTMLFormElement;
+	const cards = [...document.querySelectorAll<HTMLElement>("[data-tour]")];
+	const count = document.getElementById("tour-count")!;
+	const empty = document.getElementById("tour-empty")!;
+	const clear = document.getElementById("tour-clear")!;
+
+	function inRange(value: number, range: string): boolean {
+		if (!range) return true;
+		const [min, max] = range.split("-").map(Number);
+		return value >= min && value <= max;
+	}
+
+	function updateCards(): void {
+		const data = new FormData(form);
+		const destino = String(data.get("destino") ?? "");
+		const duracion = String(data.get("duracion") ?? "");
+		const presupuesto = String(data.get("presupuesto") ?? "");
+		let visible = 0;
+		for (const card of cards) {
+			const match =
+				(!destino || card.dataset.destino === destino) &&
+				inRange(Number(card.dataset.dias), duracion) &&
+				inRange(Number(card.dataset.precio), presupuesto);
+			card.hidden = !match;
+			if (match) visible++;
+		}
+		count.textContent = String(visible);
+		empty.hidden = visible > 0 || cards.length === 0;
+		clear.hidden = !destino && !duracion && !presupuesto;
+	}
+
+	// Con View Transitions las tarjetas se reacomodan animadas; si no, cambian al instante.
+	function applyFilters(): void {
+		if (document.startViewTransition && !reduceMotion) document.startViewTransition(updateCards);
+		else updateCards();
+	}
+
+	form.addEventListener("change", applyFilters);
+	form.addEventListener("submit", (event) => event.preventDefault());
+
+	clear.addEventListener("click", () => {
+		form.reset();
+		applyFilters();
+	});
+
+	// Los puntos del perfil y las fotos de cada región filtran los tours de esa región.
+	for (const link of document.querySelectorAll<HTMLAnchorElement>("[data-region]")) {
+		link.addEventListener("click", () => {
+			(form.elements.namedItem("destino") as HTMLSelectElement).value = link.dataset.region!;
+			applyFilters();
+		});
+	}
+</script>

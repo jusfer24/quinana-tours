@@ -1,5 +1,6 @@
-// Las cuatro regiones del sitio. `name` coincide con el destino del CRUD de Django
-// (ver el comando cargar_catalogo), así los tours toman la foto de su región.
+// Las cuatro regiones del sitio, de oeste a este. `name` coincide con el destino del CRUD
+// de Django (ver el comando cargar_catalogo), así los tours toman la foto de su región.
+// `label`, `tagline` y `alt` van en los dos idiomas del sitio (es / en).
 //
 // Fotos de Wikimedia Commons. Las CC BY-SA exigen dar crédito: se muestra en el pie.
 
@@ -18,9 +19,13 @@ export interface Credit {
 export const regions = [
 	{
 		name: "Galápagos",
-		tagline: "Islas encantadas",
+		label: { es: "Galápagos", en: "Galápagos" },
+		tagline: { es: "Islas encantadas", en: "The Enchanted Isles" },
 		image: galapagos,
-		alt: "Dos lobos marinos caminando por la orilla de una playa en la isla Isabela, Galápagos",
+		alt: {
+			es: "Dos lobos marinos caminando por la orilla de una playa en la isla Isabela, Galápagos",
+			en: "Two sea lions walking along the shore of a beach on Isabela Island, Galápagos",
+		},
 		credit: {
 			subject: "Lobos marinos, Isabela",
 			author: "Charles J. Sharp",
@@ -29,10 +34,30 @@ export const regions = [
 		},
 	},
 	{
+		name: "Costa",
+		label: { es: "Costa", en: "Coast" },
+		tagline: { es: "Pacífico y ballenas", en: "Pacific beaches and whales" },
+		image: costa,
+		alt: {
+			es: "Olas del Pacífico rompiendo en la playa Los Frailes, rodeada de acantilados verdes",
+			en: "Pacific waves breaking on Los Frailes beach, framed by green cliffs",
+		},
+		credit: {
+			subject: "Playa Los Frailes",
+			author: "AnitaAD",
+			license: "CC BY-SA 4.0",
+			url: "https://commons.wikimedia.org/wiki/File:Playa_Los_Frailes.jpg",
+		},
+	},
+	{
 		name: "Andes",
-		tagline: "Volcanes y lagunas",
+		label: { es: "Andes", en: "Andes" },
+		tagline: { es: "Volcanes y lagunas", en: "Volcanoes and crater lakes" },
 		image: andes,
-		alt: "El volcán Cotopaxi nevado entre nubes, sobre el páramo andino",
+		alt: {
+			es: "El volcán Cotopaxi nevado entre nubes, sobre el páramo andino",
+			en: "Snow-capped Cotopaxi volcano among clouds, above the Andean páramo",
+		},
 		credit: {
 			subject: "Cotopaxi",
 			author: "Bernard Gagnon",
@@ -42,26 +67,18 @@ export const regions = [
 	},
 	{
 		name: "Amazonía",
-		tagline: "Selva viva",
+		label: { es: "Amazonía", en: "Amazon" },
+		tagline: { es: "Selva viva", en: "Living rainforest" },
 		image: amazonia,
-		alt: "Pasarela de madera entre árboles gigantes hacia un lodge en la Reserva Cuyabeno",
+		alt: {
+			es: "Pasarela de madera entre árboles gigantes hacia un lodge en la Reserva Cuyabeno",
+			en: "Wooden boardwalk between giant trees leading to a lodge in the Cuyabeno Reserve",
+		},
 		credit: {
 			subject: "Lodge en Cuyabeno",
 			author: "Fährtenleser",
 			license: "CC0",
 			url: "https://commons.wikimedia.org/wiki/File:Lodge_im_Cuyabeno_Wildtier-Reservat.jpg",
-		},
-	},
-	{
-		name: "Costa",
-		tagline: "Pacífico y ballenas",
-		image: costa,
-		alt: "Olas del Pacífico rompiendo en la playa Los Frailes, rodeada de acantilados verdes",
-		credit: {
-			subject: "Playa Los Frailes",
-			author: "AnitaAD",
-			license: "CC BY-SA 4.0",
-			url: "https://commons.wikimedia.org/wiki/File:Playa_Los_Frailes.jpg",
 		},
 	},
 ] as const;

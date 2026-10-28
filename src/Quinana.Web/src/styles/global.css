@@ -5,7 +5,7 @@
 @theme {
 	--color-selva: #1f3d2b; /* verde bosque: títulos y botones principales */
 	--color-selva-claro: #2e5a3f;
-	--color-laguna: #134e4a; /* verde azulado: fondos oscuros */
+	--color-laguna: #134e4a; /* verde azulado: el mar del perfil de altitud */
 	--color-laguna-profundo: #0b3533;
 	--color-terracota: #c2562e; /* acento: llamados a la acción */
 	--color-terracota-oscuro: #a4461f;
@@ -14,7 +14,10 @@
 	--color-musgo: #5d6b63; /* texto secundario */
 	--color-borde: #cddbd1;
 
-	--font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+	/* Fuentes servidas por Astro (ver `fonts` en astro.config.mjs y <Font/> en Layout). */
+	--font-sans: var(--font-instrument), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+	--font-display: var(--font-bricolage), system-ui, sans-serif;
+	--ease-suave: cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
 @layer base {
@@ -23,9 +26,65 @@
 		scroll-padding-top: 5rem; /* las anclas no quedan bajo el encabezado fijo */
 	}
 
-	@media (prefers-reduced-motion: reduce) {
-		html {
-			scroll-behavior: auto;
-		}
+	h1,
+	h2,
+	h3 {
+		font-family: var(--font-display);
+		text-wrap: balance;
+	}
+
+	:focus-visible {
+		outline: 2px solid var(--color-terracota);
+		outline-offset: 3px;
+	}
+}
+
+/* Transición suave al navegar entre páginas (/ <-> /login, /es <-> /en). Sin JavaScript;
+   los navegadores que no la soportan simplemente cambian de página. */
+@view-transition {
+	navigation: auto;
+}
+
+/* La línea del perfil de altitud se dibuja una vez al entrar en pantalla. Es la única
+   animación decorativa de la página: si el navegador no soporta animaciones ligadas
+   al scroll, la línea aparece ya dibujada. */
+@supports (animation-timeline: view()) {
+	.perfil-trazo {
+		stroke-dasharray: 1;
+		animation: trazar linear both;
+		animation-timeline: view();
+		animation-range: entry 20% cover 45%;
+	}
+}
+
+@keyframes trazar {
+	from {
+		stroke-dashoffset: 1;
+	}
+	to {
+		stroke-dashoffset: 0;
+	}
+}
+
+/* Reacomodo animado de las tarjetas al filtrar (View Transitions API). */
+::view-transition-group(*) {
+	animation-duration: 0.4s;
+	animation-timing-function: var(--ease-suave);
+}
+
+/* Respeta "reducir movimiento": sin animaciones ni scroll suave. */
+@media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
+	}
+
+	*,
+	*::before,
+	*::after,
+	::view-transition-group(*),
+	::view-transition-old(*),
+	::view-transition-new(*) {
+		animation: none !important;
+		transition: none !important;
 	}
 }

@@ -1,13 +1,16 @@
 ---
 // Logo: sol terracota sobre montañas verdes + nombre y lema.
+import { homePath, t, type Lang } from "../i18n/ui";
+
 interface Props {
+	lang?: Lang;
 	inverse?: boolean; // texto blanco, para fondos oscuros
 }
 
-const { inverse = false } = Astro.props;
+const { lang = "es", inverse = false } = Astro.props;
 ---
 
-<a href="/" class="flex items-center gap-2.5" aria-label="Quinana Tours, inicio">
+<a href={homePath[lang]} class="flex items-center gap-2.5" aria-label={lang === "es" ? "Quinana Tours, inicio" : "Quinana Tours, home"}>
 	<svg class="h-10 w-10 shrink-0" viewBox="0 0 40 40" aria-hidden="true">
 		<circle cx="20" cy="20" r="20" fill={inverse ? "#ffffff" : "#faf6ee"}></circle>
 		<circle cx="25" cy="14" r="6" fill="#c2562e"></circle>
@@ -15,11 +18,11 @@ const { inverse = false } = Astro.props;
 		<path d="M14 17l3 4-3-1-2 2z" fill="#ffffff" opacity=".85"></path>
 	</svg>
 	<span class="leading-none">
-		<span class:list={["block text-lg font-extrabold tracking-tight", inverse ? "text-white" : "text-selva"]}>
+		<span class:list={["block font-display text-lg font-extrabold tracking-tight", inverse ? "text-white" : "text-selva"]}>
 			Quinana Tours
 		</span>
 		<span class:list={["mt-1 block text-[11px]", inverse ? "text-white/60" : "text-musgo"]}>
-			Ecuador a tu medida
+			{t(lang).logoTagline}
 		</span>
 	</span>
 </a>
