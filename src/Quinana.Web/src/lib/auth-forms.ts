@@ -59,19 +59,53 @@ function watchFields(fields: Field[]): void {
 	}
 }
 
-// Envío de cada formulario a la API de Django. Sin entrada = la función aún no existe.
-type Submit = (data: FormData) => Promise<unknown>;
-const SUBMITS: Record<string, Submit> = {
-	"login-form": (data) =>
-		post("/api/auth/login/", {
-			email: data.get("email"),
-			password: data.get("password"),
-			remember: data.has("remember"),
-		}),
-};
-
 // Adónde va el viajero tras iniciar sesión.
 const AFTER_LOGIN_URL = "/";
+
+// Envío de cada formulario a la API de Django y qué hacer si sale bien.
+// Sin entrada = la función aún no existe.
+type Handler = {
+	send: (data: FormData) => Promise<unknown>;
+	done: (form: HTMLFormElement, data: FormData) => void;
+};
+const HANDLERS: Record<string, Handler> = {
+	"login-form": {
+		send: (data) =>
+			post("/api/auth/login/", {
+				email: data.get("email"),
+				password: data.get("password"),
+				remember: data.has("remember"),
+			}),
+		done: (form) => {
+			const status = form.querySelector<HTMLElement>(".auth-status");
+			if (status) status.textContent = "¡Listo! Redirigiendo…";
+			location.assign(AFTER_LOGIN_URL);
+		},
+	},
+	"register-form": {
+		send: (data) =>
+			post("/api/auth/register/", {
+				full_name: data.get("full_name"),
+				email: data.get("email"),
+				password: data.get("password"),
+			}),
+		done: (form, data) => showLoginAfterRegister(form, String(data.get("email"))),
+	},
+};
+
+/** Tras crear la cuenta, vuelve a "Iniciar sesión" con el correo ya escrito y un aviso. */
+function showLoginAfterRegister(registerForm: HTMLFormElement, email: string): void {
+	registerForm.reset();
+	// La página cambia de vista con los elementos [data-go] (ver login.astro).
+	document.getElementById("tab-login")?.click();
+
+	const loginForm = document.getElementById("login-form");
+	const emailInput = loginForm?.querySelector<Field>('[name="email"]');
+	const status = loginForm?.querySelector<HTMLElement>(".auth-status");
+	if (emailInput) emailInput.value = email;
+	if (status) status.textContent = "¡Cuenta creada! Ingresa tu contraseña para iniciar sesión.";
+	loginForm?.querySelector<Field>('[name="password"]')?.focus();
+}
 
 /** Muestra los errores por campo que devolvió la API bajo cada input (por su atributo name). */
 function showFieldErrors(form: HTMLFormElement, fields: Record<string, string[]>): void {
@@ -89,23 +123,23 @@ function initForm(form: HTMLFormElement): void {
 	const fields = fieldsIn(form);
 	const status = form.querySelector<HTMLElement>(".auth-status");
 	const submitButton = form.querySelector<HTMLButtonElement>('[type="submit"]');
-	const submit = SUBMITS[form.id];
+	const handler = HANDLERS[form.id];
 	watchFields(fields);
 
 	form.addEventListener("submit", async (event) => {
 		event.preventDefault();
 		if (!validateAll(fields)) return;
-		if (!submit) {
+		if (!handler) {
 			if (status) status.textContent = NOT_AVAILABLE;
 			return;
 		}
 
 		if (status) status.textContent = "";
 		if (submitButton) submitButton.disabled = true;
+		const data = new FormData(form);
 		try {
-			await submit(new FormData(form));
-			if (status) status.textContent = "¡Listo! Redirigiendo…";
-			location.assign(AFTER_LOGIN_URL);
+			await handler.send(data);
+			handler.done(form, data);
 		} catch (error) {
 			if (error instanceof ApiError) {
 				showFieldErrors(form, error.fields);
@@ -113,6 +147,7 @@ function initForm(form: HTMLFormElement): void {
 			} else if (status) {
 				status.textContent = "Algo salió mal. Inténtalo de nuevo.";
 			}
+		} finally {
 			if (submitButton) submitButton.disabled = false;
 		}
 	});

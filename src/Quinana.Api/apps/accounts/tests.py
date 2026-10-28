@@ -28,6 +28,35 @@ class AuthApiTestCase(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()["detail"], "Correo o contraseña incorrectos.")
 
+    def test_registro_crea_usuario_sin_iniciar_sesion(self):
+        response = self.post(
+            "/api/auth/register/",
+            {"full_name": "Bob", "email": "Bob@Test.com", "password": PASSWORD},
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(get_user_model().objects.filter(email="bob@test.com").exists())
+        self.assertIsNone(self.client.get("/api/auth/me/").json()["user"])
+
+        # Con la cuenta creada, el viajero ya puede iniciar sesión.
+        response = self.post("/api/auth/login/", {"email": "bob@test.com", "password": PASSWORD})
+        self.assertEqual(response.status_code, 200)
+
+    def test_registro_rechaza_correo_repetido(self):
+        response = self.post(
+            "/api/auth/register/",
+            {"full_name": "Ana", "email": "ANA@test.com", "password": PASSWORD},
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("email", response.json())
+
+    def test_registro_rechaza_contrasena_debil(self):
+        response = self.post(
+            "/api/auth/register/",
+            {"full_name": "Bob", "email": "bob@test.com", "password": "12345678"},
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("password", response.json())
+
     def test_logout_cierra_la_sesion(self):
         self.client.force_login(self.user)
         self.assertEqual(self.post("/api/auth/logout/", {}).status_code, 204)
