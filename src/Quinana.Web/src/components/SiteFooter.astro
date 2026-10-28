@@ -1,0 +1,65 @@
+---
+import { bannerCredit, regions } from "../lib/regions";
+import Logo from "./Logo.astro";
+
+const year = new Date().getFullYear();
+// Las licencias CC BY-SA exigen dar crédito al autor de cada foto.
+const credits = [...regions.map((region) => region.credit), bannerCredit];
+---
+
+<footer class="border-t border-borde/60 bg-white">
+	<div class="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+		<div>
+			<Logo />
+			<p class="mt-4 max-w-xs text-sm leading-relaxed text-musgo">
+				Turismo receptivo en Ecuador. Te acercamos a Galápagos, los Andes, la Amazonía y la Costa
+				con viajes armados a tu medida.
+			</p>
+		</div>
+
+		<nav aria-label="Explorar">
+			<p class="text-sm font-bold text-tinta">Explorar</p>
+			<ul class="mt-4 space-y-2.5 text-sm text-musgo">
+				<li><a href="/#destinos" class="hover:text-terracota">Destinos</a></li>
+				<li><a href="/#tours" class="hover:text-terracota">Tours</a></li>
+				<li><a href="/#como-funciona" class="hover:text-terracota">Cómo funciona</a></li>
+				<li><a href="/#cotizar" class="hover:text-terracota">Solicitar cotización</a></li>
+			</ul>
+		</nav>
+
+		<nav aria-label="Destinos">
+			<p class="text-sm font-bold text-tinta">Destinos</p>
+			<ul class="mt-4 space-y-2.5 text-sm text-musgo">
+				{regions.map((region) => (
+					<li><a href="/#destinos" class="hover:text-terracota">{region.name}</a></li>
+				))}
+			</ul>
+		</nav>
+
+		<nav aria-label="Tu cuenta">
+			<p class="text-sm font-bold text-tinta">Tu cuenta</p>
+			<ul class="mt-4 space-y-2.5 text-sm text-musgo">
+				<li><a href="/login#iniciar-sesion" class="hover:text-terracota">Iniciar sesión</a></li>
+				<li><a href="/login#registro" class="hover:text-terracota">Crear una cuenta</a></li>
+			</ul>
+		</nav>
+	</div>
+
+	<div class="border-t border-borde/60">
+		<div class="mx-auto max-w-6xl space-y-2 px-4 py-6 text-xs text-musgo sm:px-6">
+			<p>© {year} Quinana Tours. Ecuador.</p>
+			<p>
+				Fotos de Wikimedia Commons:{" "}
+				{credits.map((credit, index) => (
+					<>
+						<a href={credit.url} class="underline hover:text-terracota" rel="noopener" target="_blank">
+							{credit.subject}
+						</a>{" "}
+						({credit.author}, {credit.license}){index < credits.length - 1 ? "; " : "."}
+					</>
+				))}
+				{" "}Laguna del Quilotoa: Omri D. Cohen (Unsplash).
+			</p>
+		</div>
+	</div>
+</footer>

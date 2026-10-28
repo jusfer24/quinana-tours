@@ -1,0 +1,41 @@
+---
+// Íconos de línea (24×24, trazo) usados en la página pública.
+const paths = {
+	"map-pin": ["M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z", "M12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"],
+	clock: ["M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z", "M12 7v5l3 2"],
+	wallet: ["M4 7h15a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z", "M4 7l11-3v3", "M16 13h.01"],
+	search: ["M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14z", "M20 20l-4-4"],
+	arrow: ["M5 12h14", "M13 6l6 6-6 6"],
+	compass: ["M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z", "M15.5 8.5l-2 5-5 2 2-5z"],
+	shield: ["M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z", "M9 12l2 2 4-4"],
+	route: ["M6 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4z", "M18 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4z", "M8 17h6a3 3 0 0 0 0-6h-4a3 3 0 0 1 0-6h6"],
+	headset: ["M4 15v-3a8 8 0 0 1 16 0v3", "M4 15h3v5H5a1 1 0 0 1-1-1z", "M20 15h-3v5h2a1 1 0 0 0 1-1z"],
+	mountain: ["M3 20l6-10 4 6 3-4 5 8z"],
+	beach: ["M17 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6z", "M3 17c2-1.5 4-1.5 6 0s4 1.5 6 0 4-1.5 6 0", "M3 21c2-1.5 4-1.5 6 0s4 1.5 6 0 4-1.5 6 0"],
+	leaf: ["M5 19c0-8 6-14 15-14 0 9-6 15-14 15", "M5 19l7-7"],
+	landmark: ["M3 21h18", "M4 9h16", "M12 3l8 5H4z", "M6 9v9", "M10 9v9", "M14 9v9", "M18 9v9"],
+	heart: ["M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"],
+	users: ["M10 11.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z", "M3 20v-1a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v1", "M16 4.6a3.5 3.5 0 0 1 0 6.8", "M21 20v-1a3.5 3.5 0 0 0-2.5-3.4"],
+	sun: ["M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8z", "M12 2v2", "M12 20v2", "M4.9 4.9l1.4 1.4", "M17.7 17.7l1.4 1.4", "M2 12h2", "M20 12h2"],
+} as const;
+
+interface Props {
+	name: keyof typeof paths;
+	class?: string;
+}
+
+const { name, class: className = "h-5 w-5" } = Astro.props;
+---
+
+<svg
+	class={className}
+	viewBox="0 0 24 24"
+	fill="none"
+	stroke="currentColor"
+	stroke-width="1.8"
+	stroke-linecap="round"
+	stroke-linejoin="round"
+	aria-hidden="true"
+>
+	{paths[name].map((d) => <path d={d} />)}
+</svg>

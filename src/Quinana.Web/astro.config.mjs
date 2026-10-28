@@ -8,11 +8,6 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   integrations: [react()],
 
-  // El acceso (Comenzar / Crear una cuenta) es ahora la página principal.
-  redirects: {
-    '/login': '/',
-  },
-
   vite: {
     plugins: [tailwindcss()]
   }

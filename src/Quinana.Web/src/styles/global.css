@@ -1,1 +1,31 @@
 @import "tailwindcss";
+
+/* Paleta "Selva y tierra": la misma del acceso (login.astro) y del panel de Django.
+   Genera clases como bg-selva, text-terracota, border-borde… */
+@theme {
+	--color-selva: #1f3d2b; /* verde bosque: títulos y botones principales */
+	--color-selva-claro: #2e5a3f;
+	--color-laguna: #134e4a; /* verde azulado: fondos oscuros */
+	--color-laguna-profundo: #0b3533;
+	--color-terracota: #c2562e; /* acento: llamados a la acción */
+	--color-terracota-oscuro: #a4461f;
+	--color-crema: #faf6ee; /* fondo claro de secciones */
+	--color-tinta: #1b2420; /* texto */
+	--color-musgo: #5d6b63; /* texto secundario */
+	--color-borde: #cddbd1;
+
+	--font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+@layer base {
+	html {
+		scroll-behavior: smooth;
+		scroll-padding-top: 5rem; /* las anclas no quedan bajo el encabezado fijo */
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		html {
+			scroll-behavior: auto;
+		}
+	}
+}
