@@ -1,8 +1,14 @@
 // Catálogo público que expone Django en /api/tours/. Astro lo lee al generar la página
 // (en `astro dev`, en cada visita; en `astro build`, una vez). Si la API no responde,
 // la página se genera igual con la lista vacía.
+//
+// CATALOG_API_URL (solo al compilar) permite leer el catálogo de una URL distinta a la que
+// usa el navegador: en Cloudflare el navegador llama a /api/ del mismo sitio (PUBLIC_API_URL
+// vacío) y el build, que no tiene ese proxy, lee directo de Render.
 
-import { API_URL } from "./api";
+import { API_URL as BROWSER_API_URL } from "./api";
+
+const API_URL = import.meta.env.CATALOG_API_URL || BROWSER_API_URL;
 
 export interface Tour {
 	id: number;

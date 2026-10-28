@@ -3,7 +3,8 @@
 //
 // La URL se configura con PUBLIC_API_URL en src/Quinana.Web/.env. En local debe usar
 // "localhost" (no 127.0.0.1), igual que el sitio Astro, para que el navegador envíe
-// la cookie de sesión.
+// la cookie de sesión. En Cloudflare Pages va vacío: el navegador llama a /api/ del mismo
+// sitio y functions/ lo reenvía a Django (ver cloudflare/django-proxy.js).
 
 export const API_URL = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8000";
 
