@@ -26,7 +26,7 @@ __pycache__/
 /src/Quinana.Api/.venv/
 /src/Quinana.Api/venv/
 /src/Quinana.Api/env/
-/src/Quinana.Api/static/ 
+/src/Quinana.Api/staticfiles/
 /src/Quinana.Api/media/
 
 # ==========================================
