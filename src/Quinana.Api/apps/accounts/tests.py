@@ -71,6 +71,9 @@ class AuthApiTestCase(TestCase):
         )
         self.assertEqual(response.status_code, 403)
 
-    def test_viajero_no_puede_entrar_al_crud_de_tours(self):
+    def test_viajero_ve_el_catalogo_pero_no_puede_modificarlo(self):
         self.client.force_login(self.user)
-        self.assertEqual(self.client.get("/tours/").status_code, 403)
+        response = self.client.get("/tours/")
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Nuevo tour")
+        self.assertEqual(self.client.get("/tours/nuevo/").status_code, 403)

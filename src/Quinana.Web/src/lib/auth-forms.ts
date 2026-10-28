@@ -2,7 +2,7 @@
 // "Mostrar contraseña" y el cuadro de términos y privacidad.
 // Cada campo muestra su error en el elemento con id `${input.id}-error`.
 
-import { ApiError, post } from "./api";
+import { API_URL, ApiError, post } from "./api";
 
 type Field = HTMLInputElement;
 
@@ -59,8 +59,9 @@ function watchFields(fields: Field[]): void {
 	}
 }
 
-// Adónde va el viajero tras iniciar sesión.
-const AFTER_LOGIN_URL = "/";
+// Adónde va el usuario tras iniciar sesión: el catálogo del panel de Django.
+// Provisional hasta que se definan los roles.
+const AFTER_LOGIN_URL = `${API_URL}/tours/`;
 
 // Envío de cada formulario a la API de Django y qué hacer si sale bien.
 // Sin entrada = la función aún no existe.

@@ -50,6 +50,8 @@ FRONTEND_ORIGINS = [
     ).split(',')
     if origin.strip()
 ]
+# Página principal del sitio público: destino del botón "Volver al sitio" del panel.
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:4322/')
 CORS_ALLOWED_ORIGINS = FRONTEND_ORIGINS
 CORS_ALLOW_CREDENTIALS = True
 CORS_URLS_REGEX = r'^/api/.*$'

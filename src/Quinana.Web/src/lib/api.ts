@@ -5,7 +5,7 @@
 // "localhost" (no 127.0.0.1), igual que el sitio Astro, para que el navegador envíe
 // la cookie de sesión.
 
-const API_URL = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8000";
+export const API_URL = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8000";
 
 /** Error de la API. `fields` trae los errores por campo que devuelve Django ({ email: ["..."] }). */
 export class ApiError extends Error {

@@ -1,12 +1,16 @@
 """Controladores (C del patrón MVC) del CRUD de tours.
 
-Todas las vistas heredan de PermissionRequiredMixin: sin sesión, Django redirige a
-LOGIN_URL (/login/) y, tras autenticarse, devuelve al usuario a la página que intentaba
-abrir (?next=). Con sesión pero sin el permiso del modelo, responde 403.
+Sin sesión, todas las vistas redirigen a LOGIN_URL (/login/) y, tras autenticarse,
+devuelven al usuario a la página que intentaba abrir (?next=).
+
+- Listar: cualquier usuario con sesión (también los viajeros del sitio público).
+  La plantilla solo muestra "Nuevo tour", "Editar" y "Eliminar" a quien tiene permiso.
+- Crear, editar y eliminar: PermissionRequiredMixin; sin el permiso del modelo, 403.
+  Provisional hasta que se definan los roles.
 """
 
 from django.contrib import messages
-from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
@@ -16,8 +20,7 @@ from .models import Tour
 
 
 # R - Read (Listar tours)
-class TourListView(PermissionRequiredMixin, ListView):
-    permission_required = "tours.view_tour"
+class TourListView(LoginRequiredMixin, ListView):
     model = Tour
     template_name = "tour_list.html"
     context_object_name = "tours"
