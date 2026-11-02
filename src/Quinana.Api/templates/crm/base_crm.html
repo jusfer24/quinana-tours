@@ -13,7 +13,10 @@
           <a class="crm-nav-link" href="{% url 'crm_inicio' %}"{% if seccion == "inicio" %} aria-current="page"{% endif %}>Inicio</a>
         </li>
         <li>
-          <span class="crm-nav-link crm-nav-link--soon" aria-disabled="true">Cotizaciones <span class="badge">Pronto</span></span>
+          <a class="crm-nav-link" href="{% url 'lead_list' %}"{% if seccion == "cotizaciones" %} aria-current="page"{% endif %}>
+            Cotizaciones
+            {% if cotizaciones_nuevas %}<span class="badge badge--alert" title="Cotizaciones nuevas">{{ cotizaciones_nuevas }}<span class="visually-hidden"> nuevas</span></span>{% endif %}
+          </a>
         </li>
 
         <li class="crm-nav-group" aria-hidden="true">Catálogo</li>

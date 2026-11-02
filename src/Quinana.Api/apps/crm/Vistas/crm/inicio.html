@@ -9,21 +9,24 @@
         <h1>Hola, {{ user.first_name|default:user.get_username }}</h1>
         <p class="muted muted--tight">Este es el resumen del panel de Quinana Tours.</p>
       </div>
-      {% if perms.tours.add_tour %}<a href="{% url 'tour_create' %}" class="btn btn-primary">+ Nuevo tour</a>{% endif %}
+      {% if perms.tours.add_leadcotizacion %}<a href="{% url 'lead_create' %}" class="btn btn-primary">+ Nueva cotización</a>{% endif %}
     </div>
 
     <ul class="stats">
       <li class="stat">
         <span class="stat-label">Cotizaciones abiertas</span>
         <span class="stat-value">{{ resumen.abiertas }}</span>
+        <a class="link stat-link" href="{% url 'lead_embudo' %}">Ver embudo</a>
       </li>
       <li class="stat{% if resumen.sin_responsable %} stat--alert{% endif %}">
         <span class="stat-label">Sin responsable</span>
         <span class="stat-value">{{ resumen.sin_responsable }}</span>
+        <a class="link stat-link" href="{% url 'lead_list' %}?estado=abiertas&amp;responsable=sin">Ver cuáles</a>
       </li>
       <li class="stat">
         <span class="stat-label">Asignadas a mí</span>
         <span class="stat-value">{{ resumen.mias }}</span>
+        <a class="link stat-link" href="{% url 'lead_list' %}?estado=abiertas&amp;responsable=yo">Ver las mías</a>
       </li>
       <li class="stat">
         <span class="stat-label">Tours en el catálogo</span>

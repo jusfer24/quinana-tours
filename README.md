@@ -42,7 +42,7 @@ En desarrollo (MVP).
 | Página de acceso del sitio público (Astro): diseño, validación y términos | Interfaz completada |
 | Catálogo público de tours y formulario «Solicitar cotización» | Pendiente |
 | Panel interno (CRM): menú lateral, inicio y acceso solo para el equipo | Completado |
-| Gestión de cotizaciones (leads) en el CRM | En desarrollo |
+| Gestión de cotizaciones (leads) en el CRM: lista, embudo, ficha e historial | Completado |
 
 ## Funcionalidades
 
@@ -50,6 +50,7 @@ En desarrollo (MVP).
 
 - **Inicio de sesión del equipo** desde el «Acceso del equipo» del sitio público (`/login#equipo`), con usuario y contraseña de Django. Solo entran cuentas de personal (`is_staff`), mediante la API `/api/auth/staff-login/`. Django no tiene página de login propia.
 - **Panel interno (CRM) en `/crm/`:** menú lateral (Inicio, Cotizaciones, Catálogo, Equipo) e inicio con un resumen. Solo entra el personal (`is_staff`): sin sesión se redirige al «Acceso del equipo» del sitio público y un viajero con sesión recibe una página 403. El catálogo de tours está en `/crm/catalogo/tours/` (la ruta antigua `/tours/` redirige ahí).
+- **Cotizaciones (`/crm/cotizaciones/`):** lista con filtros (estado, responsable, tour, fechas y búsqueda), vista de embudo por etapas con el valor estimado de cada una, alta manual de cotizaciones que llegan por teléfono o WhatsApp, y ficha con contacto (email y WhatsApp), pasajeros, pagos, asignación de responsable, cambio de etapa, cierre (ganada, perdida o cancelada, con motivo) y reapertura. Cada cambio queda en el historial (`ActividadLead`) junto con las notas de seguimiento del equipo.
 - **Cierre de sesión** mediante una petición POST con protección CSRF. Tras cerrar sesión, se vuelve al «Acceso del equipo» y las rutas quedan bloqueadas otra vez.
 - **CRUD de tours:** crear, listar, editar y eliminar tours (título, destino, duración, descripción y precio), con mensajes de confirmación.
 - **Diseño responsive** con media queries para móvil, tableta y escritorio.
@@ -112,6 +113,14 @@ cd Web-Page_Quinana-Tours
    python manage.py createsuperuser
    ```
 
+   Opcional: carga el catálogo y cotizaciones de ejemplo para probar el CRM (las de ejemplo usan correos
+   `@demo.quinana.test` y se reemplazan al volver a ejecutarlo; `--borrar` las elimina):
+
+   ```bash
+   python manage.py cargar_catalogo
+   python manage.py cargar_leads_demo
+   ```
+
 4. Inicia el servidor:
 
    ```bash
@@ -146,6 +155,7 @@ python manage.py test tours accounts crm
 | `CrmLoginRedirectTestCase` | Sin sesión, el CRUD envía al «Acceso del equipo»; `/login/` de Django ya no existe; cerrar sesión vuelve al acceso |
 | `PublicTourApiTestCase` | Catálogo público de solo lectura (`/api/tours/`) |
 | `PanelAccessTestCase` | El CRM es solo para el personal (403 amable para viajeros), menú con la sección activa y redirecciones de las rutas antiguas |
+| `LeadServicesTests`, `LeadListTests`, `LeadCreateTests`, `LeadDetailActionsTests` | Etapas del embudo e historial, filtros y embudo, alta manual, acciones de la ficha (asignar, avanzar, cerrar con motivo, notas, pagos) y permisos |
 
 ## Estructura del proyecto
 
@@ -154,7 +164,9 @@ Web-Page_Quinana-Tours/
 ├── config/                  # Configuración del proyecto Django
 │   ├── settings.py              # Ajustes, incluida la configuración de login
 │   └── urls.py                  # Rutas principales: /crm/, /logout/, /api/
-├── crm/                     # Panel interno: acceso del personal (mixins.py), inicio y menú
+├── crm/                     # Panel interno: acceso del personal (mixins.py), inicio, menú y cotizaciones
+│   ├── services.py              # Acciones sobre cotizaciones (cada una deja su rastro en el historial)
+│   └── management/commands/     # cargar_leads_demo: cotizaciones de ejemplo
 ├── tours/                   # Aplicación del CRUD de tours
 │   ├── models.py                # Modelo (M)
 │   ├── views.py                 # Controladores (C), protegidos con StaffRequiredMixin

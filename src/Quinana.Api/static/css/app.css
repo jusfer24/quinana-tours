@@ -547,6 +547,494 @@ a.crm-nav-link:hover {
   font-size: 0.85rem;
 }
 
+/* ---------- Utilidades del CRM ---------- */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.btn-sm {
+  padding: 0.5rem 0.85rem;
+  font-size: 0.875rem;
+}
+
+.btn-full {
+  width: 100%;
+}
+
+.badge--alert {
+  color: #fff;
+  background: var(--color-accent);
+}
+
+[aria-current="page"] .badge--alert {
+  color: var(--color-primary);
+  background: #fff;
+}
+
+.cell-sub {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--color-text-soft);
+}
+
+.tag-warn {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+.section-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.05rem;
+  color: var(--color-heading);
+}
+
+.detail-main > .card + .card,
+.detail-side > .card + .card {
+  margin-top: 1rem;
+}
+
+.card-header--tight {
+  margin-bottom: 0.75rem;
+}
+
+.card-header--tight .section-title {
+  margin: 0;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.back-link--light {
+  font-weight: 600;
+  color: #fff;
+  text-decoration: none;
+}
+
+.back-link--light:hover {
+  text-decoration: underline;
+}
+
+/* Etiqueta de estado del embudo, del resultado y de los pagos. */
+.estado {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+  border-radius: 999px;
+  color: #234556;
+  background: #e3eef5;
+}
+
+.estado--nueva { color: #8a3b17; background: #fde7da; }
+.estado--seguimiento { color: #234556; background: #e3eef5; }
+.estado--cotizada { color: #5b3f8c; background: #eee7f8; }
+.estado--negociacion,
+.estado--pago-pendiente { color: #7a5a00; background: #fbf0cc; }
+.estado--ganada,
+.estado--pago-aprobada { color: #1f5a37; background: #dcefe3; }
+.estado--perdida,
+.estado--pago-fallida { color: var(--color-error); background: var(--color-error-soft); }
+.estado--cancelada,
+.estado--pago-reembolsada { color: #4b5550; background: #e9ecea; }
+
+/* ---------- Cotizaciones: cabecera, filtros, paginación ---------- */
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.segmented {
+  display: inline-flex;
+  padding: 0.2rem;
+  background: #edf2ee;
+  border-radius: var(--radius);
+}
+
+.segmented a {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-soft);
+  text-decoration: none;
+  border-radius: 0.45rem;
+}
+
+.segmented a[aria-current="page"] {
+  color: var(--color-text);
+  background: var(--color-surface);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  align-items: end;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: #f4f7f5;
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+}
+
+.field--compact > label {
+  font-size: 0.78rem;
+}
+
+.field--compact .form-input {
+  padding: 0.55rem 0.7rem;
+  font-size: 0.9rem;
+}
+
+.filters-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.result-count {
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+/* ---------- Embudo (kanban): una columna por etapa, desplazable en horizontal ---------- */
+.kanban {
+  display: grid;
+  grid-auto-columns: minmax(230px, 1fr);
+  grid-auto-flow: column;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.kanban-col {
+  display: flex;
+  flex-direction: column;
+  min-height: 12rem;
+  background: #f4f7f5;
+  border: 1px solid var(--color-border);
+  border-top: 4px solid #8fa79a;
+  border-radius: 1rem;
+}
+
+.kanban-col--nueva { border-top-color: #e08a5c; }
+.kanban-col--seguimiento { border-top-color: #6c9bb8; }
+.kanban-col--cotizada { border-top-color: #9a7fcb; }
+.kanban-col--negociacion { border-top-color: #d4a72c; }
+.kanban-col--cerrada { border-top-color: #5f8f72; }
+
+.kanban-col-header {
+  padding: 0.75rem 0.85rem 0.5rem;
+}
+
+.kanban-col-header h2 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.kanban-col-header p {
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
+  color: var(--color-text-soft);
+}
+
+.kanban-count {
+  padding: 0.05rem 0.5rem;
+  font-size: 0.78rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+}
+
+.kanban-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0 0.6rem 0.75rem;
+  list-style: none;
+}
+
+.kanban-card {
+  padding: 0.7rem 0.8rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.kanban-card p {
+  margin: 0.15rem 0 0;
+}
+
+.kanban-card-title {
+  font-weight: 700;
+  color: var(--color-heading);
+  text-decoration: none;
+}
+
+.kanban-card-title:hover {
+  text-decoration: underline;
+}
+
+.kanban-card-tour {
+  font-size: 0.85rem;
+}
+
+.kanban-card-meta {
+  font-size: 0.78rem;
+  color: var(--color-text-soft);
+}
+
+.kanban-advance {
+  width: 100%;
+  margin-top: 0.55rem;
+  padding: 0.4rem 0.5rem;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: var(--color-focus);
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.kanban-advance:hover {
+  background: rgba(46, 90, 63, 0.2);
+}
+
+.kanban-advance:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+}
+
+.kanban-empty {
+  padding: 1rem 0.5rem;
+  font-size: 0.82rem;
+  text-align: center;
+  color: var(--color-text-soft);
+}
+
+/* ---------- Ficha de la cotización ---------- */
+.detail {
+  display: grid;
+  gap: 1rem;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+}
+
+.facts > div {
+  padding: 0.8rem 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.85rem;
+}
+
+.facts dt {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-soft);
+}
+
+.facts dd {
+  margin: 0.2rem 0 0;
+  font-weight: 600;
+}
+
+.quote {
+  margin: 0;
+  padding: 0.8rem 1rem;
+  font-size: 0.92rem;
+  background: #f8faf6;
+  border-left: 3px solid var(--color-accent);
+  border-radius: 0 0.6rem 0.6rem 0;
+}
+
+.contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.contact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
+
+.inline-form {
+  margin-top: 1rem;
+}
+
+.inline-form > summary {
+  display: inline-block;
+  cursor: pointer;
+}
+
+.inline-form[open] > summary {
+  margin-bottom: 0.75rem;
+}
+
+.form--grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.form--grid .form-actions,
+.form--grid .field--mensaje {
+  grid-column: 1 / -1;
+}
+
+.note-form {
+  margin-bottom: 1.25rem;
+}
+
+.note-form textarea.form-input {
+  min-height: 4.5rem;
+}
+
+.timeline {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.timeline-item {
+  position: relative;
+  padding: 0 0 1rem 1.25rem;
+  border-left: 2px solid var(--color-border);
+}
+
+.timeline-item::before {
+  content: "";
+  position: absolute;
+  top: 0.35rem;
+  left: -6px;
+  width: 10px;
+  height: 10px;
+  background: #8fa79a;
+  border-radius: 50%;
+}
+
+.timeline-item--nota::before { background: var(--color-accent); }
+.timeline-item--pago::before { background: #2e7d4f; }
+.timeline-item--creacion::before { background: var(--color-primary); }
+
+.timeline-item p {
+  margin: 0;
+}
+
+.timeline-meta {
+  font-size: 0.8rem;
+  color: var(--color-text-soft);
+}
+
+.timeline-meta strong {
+  color: var(--color-text);
+}
+
+.timeline-item .timeline-text {
+  margin-top: 0.15rem;
+  font-size: 0.92rem;
+}
+
+.side-value {
+  margin: 0 0 0.75rem;
+  font-weight: 700;
+}
+
+.side-form {
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+}
+
+.side-form .form-input {
+  padding: 0.6rem 0.8rem;
+  font-size: 0.92rem;
+}
+
+.side-form textarea.form-input {
+  min-height: 4rem;
+}
+
+/* Etapas del embudo numeradas; la actual resaltada. */
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0 0 0.85rem;
+  padding: 0;
+  list-style: none;
+  counter-reset: paso;
+}
+
+.steps li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  color: var(--color-text-soft);
+  counter-increment: paso;
+}
+
+.steps li::before {
+  content: counter(paso);
+  display: inline-grid;
+  place-items: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: #edf2ee;
+  border-radius: 50%;
+}
+
+.steps li[aria-current="step"] {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.steps li[aria-current="step"]::before {
+  color: #fff;
+  background: var(--color-primary);
+}
+
 /* ---------- Tableta (≥ 640px) ---------- */
 @media (min-width: 640px) {
   .topbar,
@@ -597,6 +1085,19 @@ a.crm-nav-link:hover {
     margin-top: 0.75rem;
     padding-top: 0.75rem;
     border-top: 1px solid var(--color-border);
+  }
+}
+
+/* ---------- Pantallas grandes (≥ 1180px): ficha con columna de acciones ---------- */
+@media (min-width: 1180px) {
+  .detail {
+    grid-template-columns: minmax(0, 1fr) 300px;
+    align-items: start;
+  }
+
+  .detail-side {
+    position: sticky;
+    top: 1rem;
   }
 }
 
