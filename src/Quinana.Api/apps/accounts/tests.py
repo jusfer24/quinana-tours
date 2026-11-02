@@ -71,12 +71,11 @@ class AuthApiTestCase(TestCase):
         )
         self.assertEqual(response.status_code, 403)
 
-    def test_viajero_ve_el_catalogo_pero_no_puede_modificarlo(self):
+    def test_viajero_no_entra_al_panel_interno(self):
         self.client.force_login(self.user)
-        response = self.client.get("/tours/")
-        self.assertEqual(response.status_code, 200)
-        self.assertNotContains(response, "Nuevo tour")
-        self.assertEqual(self.client.get("/tours/nuevo/").status_code, 403)
+        self.assertEqual(self.client.get("/crm/").status_code, 403)
+        self.assertEqual(self.client.get("/crm/catalogo/tours/").status_code, 403)
+        self.assertEqual(self.client.get("/crm/catalogo/tours/nuevo/").status_code, 403)
 
 
 class StaffLoginApiTestCase(TestCase):
@@ -93,7 +92,7 @@ class StaffLoginApiTestCase(TestCase):
     def test_personal_inicia_sesion_con_usuario(self):
         response = self.post({"username": "operador", "password": PASSWORD})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(self.client.get("/tours/").status_code, 200)
+        self.assertEqual(self.client.get("/crm/").status_code, 200)
 
     def test_viajero_no_entra_por_el_acceso_del_equipo(self):
         response = self.post({"username": "ana@test.com", "password": PASSWORD})

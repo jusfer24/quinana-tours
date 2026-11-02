@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Sin acceso · Quinana Tours{% endblock %}
+
+{% block content %}
+  <div class="card card--narrow card--center">
+    <h1>Esta sección es solo para el equipo</h1>
+    <p class="muted">
+      Tu cuenta no tiene acceso al panel interno de Quinana Tours. Si eres del equipo,
+      cierra sesión e ingresa desde «Acceso del equipo».
+    </p>
+    <div class="form-actions form-actions--center">
+      <a href="{{ frontend_url|default:'/' }}" class="btn btn-primary">Volver al sitio</a>
+      {% if user.is_authenticated %}
+        <form action="{% url 'logout' %}" method="post">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-secondary">Cerrar sesión</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

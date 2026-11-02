@@ -59,9 +59,10 @@ function watchFields(fields: Field[]): void {
 	}
 }
 
-// Adónde va el usuario tras iniciar sesión: el catálogo del panel de Django.
-// Provisional hasta que se definan los roles.
-const AFTER_LOGIN_URL = `${API_URL}/tours/`;
+// Adónde va cada usuario tras iniciar sesión: el equipo, al panel interno (CRM) de Django;
+// los viajeros, a la página principal del sitio (el panel es solo para el personal).
+const STAFF_AFTER_LOGIN_URL = `${API_URL}/crm/`;
+const TRAVELER_AFTER_LOGIN_URL = "/";
 
 // Envío de cada formulario a la API de Django y qué hacer si sale bien.
 // Sin entrada = la función aún no existe.
@@ -82,7 +83,7 @@ const HANDLERS: Record<string, Handler> = {
 		done: (form) => {
 			const status = form.querySelector<HTMLElement>(".auth-status");
 			if (status) status.textContent = "¡Listo! Redirigiendo…";
-			location.assign(AFTER_LOGIN_URL);
+			location.assign(TRAVELER_AFTER_LOGIN_URL);
 		},
 		redirects: true,
 	},
@@ -95,7 +96,7 @@ const HANDLERS: Record<string, Handler> = {
 		done: (form) => {
 			const status = form.querySelector<HTMLElement>(".auth-status");
 			if (status) status.textContent = "¡Listo! Abriendo el panel…";
-			location.assign(AFTER_LOGIN_URL);
+			location.assign(STAFF_AFTER_LOGIN_URL);
 		},
 		redirects: true,
 	},

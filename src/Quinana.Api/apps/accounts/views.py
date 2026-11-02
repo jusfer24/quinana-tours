@@ -4,8 +4,8 @@ Usa la sesión de Django (cookie `sessionid`, inaccesible para JavaScript) en ve
 tokens. Toda petición que cambia estado exige el token CSRF que entrega CsrfView,
 enviado en la cabecera X-CSRFToken.
 
-Los viajeros no reciben permisos sobre el modelo Tour, así que aunque inicien sesión
-no pueden entrar al CRUD interno (/tours/ responde 403).
+Los viajeros no son personal (is_staff), así que aunque inicien sesión
+no pueden entrar al panel interno (/crm/ responde 403).
 """
 
 from django.contrib.auth import authenticate, get_user_model, login, logout

@@ -41,14 +41,15 @@ En desarrollo (MVP).
 | Inicio y cierre de sesión con rutas protegidas (Django) | Completado |
 | Página de acceso del sitio público (Astro): diseño, validación y términos | Interfaz completada |
 | Catálogo público de tours y formulario «Solicitar cotización» | Pendiente |
-| API REST y CRM de leads | Pendiente |
+| Panel interno (CRM): menú lateral, inicio y acceso solo para el equipo | Completado |
+| Gestión de cotizaciones (leads) en el CRM | En desarrollo |
 
 ## Funcionalidades
 
 ### Aplicación Django
 
 - **Inicio de sesión del equipo** desde el «Acceso del equipo» del sitio público (`/login#equipo`), con usuario y contraseña de Django. Solo entran cuentas de personal (`is_staff`), mediante la API `/api/auth/staff-login/`. Django no tiene página de login propia.
-- **Rutas protegidas:** sin sesión iniciada, cualquier URL del CRUD (`/tours/`, `/tours/nuevo/`, `/tours/editar/<id>/`, `/tours/eliminar/<id>/`) redirige al «Acceso del equipo» del sitio público. Después de iniciar sesión, el equipo entra al CRUD en `/tours/`.
+- **Panel interno (CRM) en `/crm/`:** menú lateral (Inicio, Cotizaciones, Catálogo, Equipo) e inicio con un resumen. Solo entra el personal (`is_staff`): sin sesión se redirige al «Acceso del equipo» del sitio público y un viajero con sesión recibe una página 403. El catálogo de tours está en `/crm/catalogo/tours/` (la ruta antigua `/tours/` redirige ahí).
 - **Cierre de sesión** mediante una petición POST con protección CSRF. Tras cerrar sesión, se vuelve al «Acceso del equipo» y las rutas quedan bloqueadas otra vez.
 - **CRUD de tours:** crear, listar, editar y eliminar tours (título, destino, duración, descripción y precio), con mensajes de confirmación.
 - **Diseño responsive** con media queries para móvil, tableta y escritorio.
@@ -117,7 +118,7 @@ cd Web-Page_Quinana-Tours
    python manage.py runserver
    ```
 
-5. Inicia también el sitio Astro (paso 3) y abre <http://localhost:4321/login#equipo>. Ingresa con el usuario del paso 3; después verás el CRUD en <http://localhost:8000/tours/>.
+5. Inicia también el sitio Astro (paso 3) y abre <http://localhost:4321/login#equipo>. Ingresa con el usuario del paso 3; después verás el panel en <http://localhost:8000/crm/>.
 
 ### 3. Sitio Astro (opcional)
 
@@ -135,7 +136,7 @@ Abre <http://localhost:4321/login>. Para detener el servidor usa `npx astro dev 
 La aplicación Django incluye pruebas automáticas del acceso y la protección de las rutas. Las apps están en `apps/`, así que se indican por nombre:
 
 ```bash
-python manage.py test tours accounts
+python manage.py test tours accounts crm
 ```
 
 | Prueba | Qué comprueba |
@@ -144,6 +145,7 @@ python manage.py test tours accounts
 | `StaffLoginApiTestCase` | Acceso del equipo: entra el personal con usuario; un viajero o una contraseña incorrecta no |
 | `CrmLoginRedirectTestCase` | Sin sesión, el CRUD envía al «Acceso del equipo»; `/login/` de Django ya no existe; cerrar sesión vuelve al acceso |
 | `PublicTourApiTestCase` | Catálogo público de solo lectura (`/api/tours/`) |
+| `PanelAccessTestCase` | El CRM es solo para el personal (403 amable para viajeros), menú con la sección activa y redirecciones de las rutas antiguas |
 
 ## Estructura del proyecto
 
@@ -151,16 +153,19 @@ python manage.py test tours accounts
 Web-Page_Quinana-Tours/
 ├── config/                  # Configuración del proyecto Django
 │   ├── settings.py              # Ajustes, incluida la configuración de login
-│   └── urls.py                  # Rutas principales: /logout/, /tours/, /api/
+│   └── urls.py                  # Rutas principales: /crm/, /logout/, /api/
+├── crm/                     # Panel interno: acceso del personal (mixins.py), inicio y menú
 ├── tours/                   # Aplicación del CRUD de tours
 │   ├── models.py                # Modelo (M)
-│   ├── views.py                 # Controladores (C), protegidos con LoginRequiredMixin
+│   ├── views.py                 # Controladores (C), protegidos con StaffRequiredMixin
 │   ├── forms.py                 # Formulario de tours
 │   ├── urls.py                  # Rutas del CRUD
 │   ├── tests.py                 # Pruebas de login y CRUD
 │   └── Vistas/                  # Plantillas del CRUD (V)
 ├── templates/               # Plantillas compartidas (V)
-│   └── base.html                # Estructura común y barra de usuario
+│   ├── base.html                # Estructura común y barra de usuario
+│   ├── crm/base_crm.html        # Layout del panel con el menú lateral
+│   └── 403.html                 # Página «solo para el equipo»
 ├── static/                  # CSS e imágenes de la aplicación Django
 ├── manage.py
 ├── requirements.txt         # Dependencias de Python

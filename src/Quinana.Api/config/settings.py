@@ -96,6 +96,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "tours",
     "accounts",
+    "crm",
 ]
 
 MIDDLEWARE = [
@@ -117,9 +118,10 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        # Agregamos la ruta hacia tours/Vistas:
+        # Plantillas de cada app (carpeta Vistas/) y las compartidas del panel:
         'DIRS': [
             BASE_DIR / 'apps' / 'tours' / 'Vistas',
+            BASE_DIR / 'apps' / 'crm' / 'Vistas',
             BASE_DIR / 'templates',  # Plantilla base del panel (base.html)
         ],
         'APP_DIRS': True,
@@ -129,6 +131,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'crm.context_processors.panel',
             ],
         },
     },
