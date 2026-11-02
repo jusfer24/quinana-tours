@@ -8,6 +8,7 @@ personal. Las cotizaciones de ejemplo usan correos @demo.quinana.test: al volver
 correrlo se reemplazan, sin tocar las cotizaciones reales.
 """
 
+import random
 from datetime import timedelta
 from decimal import Decimal
 
@@ -49,6 +50,11 @@ LEADS = [
     ("David Miller", "+1 303 555 0110", 1, 18, 10, Estado.CERRADA, Resultado.CANCELADA, "Email",
      "Solo traveler, flexible dates."),
 ]
+
+NOMBRES = ["Olivia", "Liam", "Emma", "Noah", "Mia", "Lucas", "Chloé", "Matteo", "Sofia", "Jonas",
+           "Hanna", "Ethan", "Léa", "Oscar", "Ava", "Felix", "Isabel", "Daniel", "Clara", "Marco"]
+APELLIDOS = ["Smith", "Johnson", "Müller", "Dubois", "Rossi", "García", "Brown", "Fischer", "Martin",
+             "Wilson", "Lefebvre", "Bianchi", "Taylor", "Schneider", "Moreau", "Anderson", "Romano"]
 
 MOTIVOS = {
     Resultado.GANADA: "",
@@ -133,6 +139,82 @@ class Command(BaseCommand):
                     fecha=lead.created_at + timedelta(hours=paso_horas * n)
                 )
 
+        historicas = self.cargar_historicas(tours, equipo, ahora, hoy)
         self.stdout.write(self.style.SUCCESS(
-            f"{len(LEADS)} cotizaciones de ejemplo cargadas ({borradas} anteriores reemplazadas)."
+            f"{len(LEADS) + historicas} cotizaciones de ejemplo cargadas "
+            f"({borradas} anteriores reemplazadas)."
         ))
+
+    def cargar_historicas(self, tours, equipo, ahora, hoy):
+        """Cotizaciones de los últimos 6 meses para que el inicio tenga tendencias reales.
+
+        Semilla fija: cada ejecución genera exactamente los mismos datos. Las más antiguas
+        tienen más probabilidad de estar cerradas; el tiempo de primera respuesta varía
+        (la mayoría en horas, algunas pasan de la meta de 24 h).
+        """
+        azar = random.Random(2026)
+        origenes = (
+            ["Sitio web"] * 14 + ["WhatsApp"] * 4
+            + ["Email"] * 2 + ["Referido"] * 2 + ["Redes sociales"] * 2 + ["Feria / evento"]
+        )
+        creadas = 0
+        for n in range(80):
+            # Algo más de solicitudes en los meses recientes (la demanda viene creciendo).
+            dias_atras = int(azar.triangular(0, 200, 70))
+            creada = ahora - timedelta(days=dias_atras, hours=azar.randint(0, 23))
+            nombre = f"{azar.choice(NOMBRES)} {azar.choice(APELLIDOS)}"
+            email = f"{slugify(nombre).replace('-', '.')}.{n}{DOMINIO}"
+            pax = azar.choice([1, 2, 2, 2, 3, 4, 4, 5, 6])
+            responsable = azar.choice(equipo)
+            respuesta_h = azar.lognormvariate(1.8, 0.9)  # mediana ≈ 6 h
+            cierre = None
+            if dias_atras > 45 or (dias_atras > 7 and azar.random() < dias_atras / 60):
+                etapa = Estado.CERRADA
+                resultado = azar.choices(
+                    [Resultado.GANADA, Resultado.PERDIDA, Resultado.CANCELADA], weights=[38, 47, 15]
+                )[0]
+                cierre = creada + timedelta(days=azar.randint(4, min(dias_atras - 1, 45)))
+            else:
+                resultado = None
+                # Las "nuevas" son de los últimos días; las demás ya avanzaron en el embudo.
+                if dias_atras <= 3:
+                    etapa = Estado.NUEVA
+                else:
+                    etapa = azar.choices(services.ESTADOS_ABIERTOS[1:], weights=[4, 3, 2])[0]
+            if etapa == Estado.NUEVA:
+                responsable = None if azar.random() < 0.6 else responsable
+            if resultado:
+                fecha_viaje = cierre.date() + timedelta(days=azar.randint(10, 150))
+            else:  # abiertas: el viaje todavía no llega
+                fecha_viaje = hoy + timedelta(days=azar.randint(12, 200))
+
+            lead = LeadCotizacion.objects.create(
+                nombre_cliente=nombre, email_cliente=email, tour=azar.choice(tours),
+                numero_pasajeros=pax, fecha_estimada=fecha_viaje, origen_lead=azar.choice(origenes),
+                estado_embudo=etapa, resultado_cierre=resultado, fecha_cierre=cierre,
+                motivo_cierre=MOTIVOS[resultado] if resultado else "", responsable=responsable,
+                created_at=creada,
+            )
+            Contacto.objects.create(lead=lead, nombre=nombre, email=email)
+
+            # Historial con fechas coherentes: creación → primera acción → etapas → cierre.
+            actividades = [ActividadLead(lead=lead, tipo=ActividadLead.Tipo.CREACION, fecha=creada,
+                                         texto=f"Cotización registrada para «{lead.tour}».")]
+            if responsable:
+                primera = creada + timedelta(hours=respuesta_h)
+                if primera < ahora:
+                    actividades.append(ActividadLead(
+                        lead=lead, autor=responsable, tipo=ActividadLead.Tipo.ASIGNACION, fecha=primera,
+                        texto=f"Responsable: {services.nombre_de(responsable)}.",
+                    ))
+                # Última acción: el cierre, o un seguimiento reciente (algunas quedan quietas).
+                ultima = cierre or (ahora - timedelta(days=azar.choice([0, 1, 1, 2, 3, 4, 8]), hours=2))
+                if etapa != Estado.NUEVA and ultima < ahora:
+                    actividades.append(ActividadLead(
+                        lead=lead, autor=responsable, tipo=ActividadLead.Tipo.ESTADO, fecha=ultima,
+                        texto=f"Estado: {lead.get_estado_embudo_display()}"
+                        + (f" ({lead.get_resultado_cierre_display().lower()})." if resultado else "."),
+                    ))
+            ActividadLead.objects.bulk_create(actividades)
+            creadas += 1
+        return creadas

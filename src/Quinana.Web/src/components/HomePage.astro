@@ -10,6 +10,7 @@ import Layout from "../layouts/Layout.astro";
 import { regionFor, regions } from "../lib/regions";
 import { fetchTours, formatPrice } from "../lib/tours";
 import PerfilAltitud from "./PerfilAltitud.astro";
+import QuoteForm from "./QuoteForm";
 
 interface Props {
 	lang: Lang;
@@ -188,6 +189,7 @@ const selectClass =
 									</p>
 									<a
 										href="#cotizar"
+										data-cotizar-tour={tour.id}
 										class="rounded-full border border-selva px-4 py-2 text-sm font-semibold text-selva transition-colors hover:bg-selva hover:text-white"
 									>
 										{text.tours.ask}
@@ -243,8 +245,8 @@ const selectClass =
 		</dl>
 	</section>
 
-	<!-- ===================== Llamado a cotizar ===================== -->
-	<!-- El formulario de cotización (React + API de leads) es la siguiente feature. -->
+	<!-- ===================== Solicitar cotización ===================== -->
+	<!-- Formulario en React (QuoteForm) que crea la cotización en el CRM de Django. -->
 	<section id="cotizar" class="relative isolate overflow-hidden bg-selva">
 		<Image
 			src={banner}
@@ -254,20 +256,38 @@ const selectClass =
 			class="absolute inset-0 -z-20 h-full w-full object-cover"
 		/>
 		<div class="absolute inset-0 -z-10 bg-gradient-to-r from-selva via-selva/85 to-selva/30"></div>
-		<div class="mx-auto max-w-6xl px-4 py-24 text-white sm:px-6 md:py-32">
-			<h2 class="max-w-xl text-4xl leading-tight font-extrabold tracking-tight md:text-5xl">{text.cta.title}</h2>
-			<p class="mt-5 max-w-md text-lg leading-relaxed text-white/85">{text.cta.text}</p>
-			<div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
-				<a
-					href="/login#registro"
-					class="rounded-full bg-terracota px-7 py-3.5 font-semibold text-white transition-colors hover:bg-terracota-oscuro"
-				>
-					{text.cta.register}
-				</a>
-				<a href="/login" class="font-semibold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white">
-					{text.cta.login}
-				</a>
+		<div class="mx-auto grid max-w-6xl items-center gap-12 px-4 py-24 text-white sm:px-6 md:py-32 lg:grid-cols-[1fr_minmax(0,32rem)]">
+			<div>
+				<h2 class="max-w-xl text-4xl leading-tight font-extrabold tracking-tight md:text-5xl">{text.cta.title}</h2>
+				<p class="mt-5 max-w-md text-lg leading-relaxed text-white/85">{text.cta.text}</p>
+				<ul class="mt-8 space-y-3">
+					{
+						text.cta.points.map((point) => (
+							<li class="flex items-center gap-3 font-semibold">
+								<span aria-hidden="true" class="grid size-6 place-items-center rounded-full bg-terracota text-sm">✓</span>
+								{point}
+							</li>
+						))
+					}
+				</ul>
+				<p class="mt-10 text-sm text-white/80">
+					{text.cta.accountPrompt}
+					<a href="/login#registro" class="ml-1 font-semibold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white">
+						{text.cta.register}
+					</a>
+					<span aria-hidden="true"> · </span>
+					<a href="/login" class="font-semibold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white">
+						{text.cta.login}
+					</a>
+				</p>
 			</div>
+
+			<QuoteForm
+				client:visible
+				lang={lang}
+				tours={tours.map((tour) => ({ id: tour.id, title: tour.title }))}
+				text={text.quote}
+			/>
 		</div>
 	</section>
 </Layout>

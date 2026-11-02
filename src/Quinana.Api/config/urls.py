@@ -8,6 +8,7 @@
 - /admin/   Panel de administración de Django.
 - /api/auth/  API de acceso de los viajeros del sitio público (Astro).
 - /api/tours/ Catálogo público de solo lectura para el sitio Astro.
+- /api/cotizaciones/ Formulario "Solicitar cotización" del sitio público (crea un lead en el CRM).
 """
 
 from django.contrib import admin
@@ -15,6 +16,7 @@ from django.contrib.auth import views as auth_views
 from django.urls import include, path, re_path
 from django.views.generic import RedirectView
 
+from crm.api import SolicitudCotizacionView
 from tours.api import PublicTourListView
 
 urlpatterns = [
@@ -25,4 +27,5 @@ urlpatterns = [
     re_path(r"^tours/(?P<resto>.*)$", RedirectView.as_view(url="/crm/catalogo/tours/%(resto)s")),
     path("api/auth/", include("accounts.urls")),
     path("api/tours/", PublicTourListView.as_view(), name="api_tours"),
+    path("api/cotizaciones/", SolicitudCotizacionView.as_view(), name="api_cotizaciones"),
 ]

@@ -40,17 +40,19 @@ En desarrollo (MVP).
 | CRUD de tours con patrón MVC (Django) | Completado |
 | Inicio y cierre de sesión con rutas protegidas (Django) | Completado |
 | Página de acceso del sitio público (Astro): diseño, validación y términos | Interfaz completada |
-| Catálogo público de tours y formulario «Solicitar cotización» | Pendiente |
+| Catálogo público de tours y formulario «Solicitar cotización» (crea el lead en el CRM) | Completado |
 | Panel interno (CRM): menú lateral, inicio y acceso solo para el equipo | Completado |
 | Gestión de cotizaciones (leads) en el CRM: lista, embudo, ficha e historial | Completado |
+| Inicio del CRM con indicadores, gráficas y calendario de viajes | Completado |
 
 ## Funcionalidades
 
 ### Aplicación Django
 
 - **Inicio de sesión del equipo** desde el «Acceso del equipo» del sitio público (`/login#equipo`), con usuario y contraseña de Django. Solo entran cuentas de personal (`is_staff`), mediante la API `/api/auth/staff-login/`. Django no tiene página de login propia.
-- **Panel interno (CRM) en `/crm/`:** menú lateral (Inicio, Cotizaciones, Catálogo, Equipo) e inicio con un resumen. Solo entra el personal (`is_staff`): sin sesión se redirige al «Acceso del equipo» del sitio público y un viajero con sesión recibe una página 403. El catálogo de tours está en `/crm/catalogo/tours/` (la ruta antigua `/tours/` redirige ahí).
+- **Panel interno (CRM) en `/crm/`:** barra lateral desplegable (en escritorio se contrae a íconos y recuerda la elección; en móvil se abre con un botón), buscador de clientes y usuario en la barra superior. Solo entra el personal (`is_staff`): sin sesión se redirige al «Acceso del equipo» del sitio público y un viajero con sesión recibe una página 403. El catálogo de tours está en `/crm/catalogo/tours/` (la ruta antigua `/tours/` redirige ahí).
 - **Cotizaciones (`/crm/cotizaciones/`):** lista con filtros (estado, responsable, tour, fechas y búsqueda), vista de embudo por etapas con el valor estimado de cada una, alta manual de cotizaciones que llegan por teléfono o WhatsApp, y ficha con contacto (email y WhatsApp), pasajeros, pagos, asignación de responsable, cambio de etapa, cierre (ganada, perdida o cancelada, con motivo) y reapertura. Cada cambio queda en el historial (`ActividadLead`) junto con las notas de seguimiento del equipo.
+- **Inicio del CRM:** filtro de periodo (30 días, 90 días o 12 meses) e indicadores con su variación frente al periodo anterior: solicitudes recibidas, ventas ganadas (USD), tasa de cierre y primera respuesta (mediana contra la meta de 24 h). Gráfica de solicitudes por semana o mes (ganadas y resto), «Requieren atención» (sin responsable, viaje cercano aún abierto, sin movimiento), calendario de viajes confirmados con los días en ruta, demanda por destino, canal de llegada y tabla del equipo. Todo se calcula con la base de datos en `crm/metricas.py` y se dibuja en SVG, sin librerías de gráficas.
 - **Cierre de sesión** mediante una petición POST con protección CSRF. Tras cerrar sesión, se vuelve al «Acceso del equipo» y las rutas quedan bloqueadas otra vez.
 - **CRUD de tours:** crear, listar, editar y eliminar tours (título, destino, duración, descripción y precio), con mensajes de confirmación.
 - **Diseño responsive** con media queries para móvil, tableta y escritorio.
@@ -58,6 +60,7 @@ En desarrollo (MVP).
 ### Sitio Astro
 
 - Página de acceso con pantalla de bienvenida, pestañas de inicio de sesión y registro, recuperación de contraseña y validación en español.
+- Formulario «Solicitar cotización» en la portada (isla React con React Hook Form y Zod, en español e inglés). Envía a `POST /api/cotizaciones/`, que crea la cotización «Nueva» en el CRM con origen «Sitio web». Protegido con CSRF, un límite de 10 solicitudes por hora por IP y un campo trampa contra bots. El botón «Consultar» de cada tour lo deja preseleccionado.
 - Términos y política de privacidad redactados con base en la Ley Orgánica de Protección de Datos Personales y la Ley Orgánica de Defensa del Consumidor del Ecuador.
 
 ## Arquitectura MVC
@@ -155,6 +158,8 @@ python manage.py test tours accounts crm
 | `CrmLoginRedirectTestCase` | Sin sesión, el CRUD envía al «Acceso del equipo»; `/login/` de Django ya no existe; cerrar sesión vuelve al acceso |
 | `PublicTourApiTestCase` | Catálogo público de solo lectura (`/api/tours/`) |
 | `PanelAccessTestCase` | El CRM es solo para el personal (403 amable para viajeros), menú con la sección activa y redirecciones de las rutas antiguas |
+| `SolicitudCotizacionApiTests` | Formulario del sitio: crea la cotización, valida, campo trampa, CSRF y límite de envíos |
+| `InicioMetricasTests` | Indicadores del periodo, avisos, calendario de viajes y coordenadas del SVG con punto decimal |
 | `LeadServicesTests`, `LeadListTests`, `LeadCreateTests`, `LeadDetailActionsTests` | Etapas del embudo e historial, filtros y embudo, alta manual, acciones de la ficha (asignar, avanzar, cerrar con motivo, notas, pagos) y permisos |
 
 ## Estructura del proyecto
@@ -166,6 +171,8 @@ Web-Page_Quinana-Tours/
 │   └── urls.py                  # Rutas principales: /crm/, /logout/, /api/
 ├── crm/                     # Panel interno: acceso del personal (mixins.py), inicio, menú y cotizaciones
 │   ├── services.py              # Acciones sobre cotizaciones (cada una deja su rastro en el historial)
+│   ├── metricas.py              # Indicadores y gráficas del inicio
+│   ├── api.py                   # POST /api/cotizaciones/ (formulario del sitio público)
 │   └── management/commands/     # cargar_leads_demo: cotizaciones de ejemplo
 ├── tours/                   # Aplicación del CRUD de tours
 │   ├── models.py                # Modelo (M)

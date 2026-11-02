@@ -1,51 +1,159 @@
 {% extends "base.html" %}
 {% comment %}
-  Layout del panel interno: menú lateral (en móvil, una fila desplazable) y contenido.
+  Layout del panel interno: barra lateral verde, barra superior con buscador y usuario, y el contenido.
+  - Escritorio: la barra lateral se contrae a una franja de íconos (botón «Contraer menú») y la
+    elección se recuerda en localStorage.
+  - Móvil: la barra es una franja arriba; el botón de menú abre y cierra la lista de secciones.
   Cada vista marca su sección con el atributo `seccion` de StaffRequiredMixin.
-  Las secciones "Pronto" se irán activando en las siguientes fases del plan del CRM.
 {% endcomment %}
 
+{% block body_class %}crm{% endblock %}
+{% block header %}{% endblock %}
+
+{% block head_extra %}
+  {# Aplica la barra contraída antes de pintar, para que no se vea un salto al cargar. #}
+  <script>
+    try { if (localStorage.getItem("crm-menu") === "contraido") document.documentElement.classList.add("crm-contraido"); } catch (e) {}
+  </script>
+{% endblock %}
+
 {% block body %}
-  <div class="crm-layout">
-    <nav class="crm-nav" aria-label="Menú del panel">
-      <ul class="crm-nav-list">
-        <li>
-          <a class="crm-nav-link" href="{% url 'crm_inicio' %}"{% if seccion == "inicio" %} aria-current="page"{% endif %}>Inicio</a>
-        </li>
-        <li>
-          <a class="crm-nav-link" href="{% url 'lead_list' %}"{% if seccion == "cotizaciones" %} aria-current="page"{% endif %}>
-            Cotizaciones
-            {% if cotizaciones_nuevas %}<span class="badge badge--alert" title="Cotizaciones nuevas">{{ cotizaciones_nuevas }}<span class="visually-hidden"> nuevas</span></span>{% endif %}
-          </a>
-        </li>
+  <div class="crm-shell">
+    <aside class="crm-sidebar">
+      <div class="crm-sidebar-head">
+        <a class="crm-logo" href="{% url 'crm_inicio' %}" title="Quinana Tours · Inicio">
+          <span class="crm-logo-text">Quinana Tours<small>CRM del equipo</small></span>
+          <span class="crm-logo-short" aria-hidden="true">Q</span>
+        </a>
+        <button type="button" class="crm-menu-btn" aria-controls="crm-nav" aria-expanded="false">
+          {% include "crm/_icono.html" with nombre="menu" %}<span class="visually-hidden">Abrir menú</span>
+        </button>
+      </div>
 
-        <li class="crm-nav-group" aria-hidden="true">Catálogo</li>
-        <li>
-          <a class="crm-nav-link" href="{% url 'tour_list' %}"{% if seccion == "tours" %} aria-current="page"{% endif %}>Tours</a>
-        </li>
-        <li>
-          <span class="crm-nav-link crm-nav-link--soon" aria-disabled="true">Destinos <span class="badge">Pronto</span></span>
-        </li>
-        <li>
-          <span class="crm-nav-link crm-nav-link--soon" aria-disabled="true">Categorías <span class="badge">Pronto</span></span>
-        </li>
+      <nav class="crm-nav" id="crm-nav" aria-label="Menú del panel">
+        <ul class="crm-nav-list">
+          <li>
+            <a class="crm-nav-link" href="{% url 'crm_inicio' %}" title="Inicio"{% if seccion == "inicio" %} aria-current="page"{% endif %}>
+              {% include "crm/_icono.html" with nombre="inicio" %}<span class="crm-nav-label">Inicio</span>
+            </a>
+          </li>
+          <li>
+            <a class="crm-nav-link" href="{% url 'lead_list' %}" title="Cotizaciones"{% if seccion == "cotizaciones" %} aria-current="page"{% endif %}>
+              {% include "crm/_icono.html" with nombre="cotizaciones" %}<span class="crm-nav-label">Cotizaciones</span>
+              {% if cotizaciones_nuevas %}<span class="badge badge--alert" title="Cotizaciones nuevas">{{ cotizaciones_nuevas }}<span class="visually-hidden"> nuevas</span></span>{% endif %}
+            </a>
+          </li>
 
-        <li class="crm-nav-group" aria-hidden="true">Administración</li>
-        <li>
-          <span class="crm-nav-link crm-nav-link--soon" aria-disabled="true">Equipo <span class="badge">Pronto</span></span>
-        </li>
-        {% if user.is_superuser %}
-          <li><a class="crm-nav-link" href="{% url 'admin:index' %}">Admin de Django</a></li>
-        {% endif %}
-        <li class="crm-nav-foot">
-          <a class="crm-nav-link" href="{{ frontend_url }}" target="_blank" rel="noopener">Ver sitio público <span aria-hidden="true">↗</span></a>
-        </li>
-      </ul>
-    </nav>
+          <li class="crm-nav-group" aria-hidden="true"><span class="crm-nav-label">Catálogo</span></li>
+          <li>
+            <a class="crm-nav-link" href="{% url 'tour_list' %}" title="Tours"{% if seccion == "tours" %} aria-current="page"{% endif %}>
+              {% include "crm/_icono.html" with nombre="tours" %}<span class="crm-nav-label">Tours</span>
+            </a>
+          </li>
+          <li>
+            <span class="crm-nav-link crm-nav-link--soon" aria-disabled="true" title="Destinos">
+              {% include "crm/_icono.html" with nombre="destinos" %}<span class="crm-nav-label">Destinos</span>
+            </span>
+          </li>
+          <li>
+            <span class="crm-nav-link crm-nav-link--soon" aria-disabled="true" title="Categorías">
+              {% include "crm/_icono.html" with nombre="categorias" %}<span class="crm-nav-label">Categorías</span>
+            </span>
+          </li>
 
-    <main class="crm-main">
-      {% include "partials/messages.html" %}
-      {% block content %}{% endblock %}
-    </main>
+          <li class="crm-nav-group" aria-hidden="true"><span class="crm-nav-label">Administración</span></li>
+          <li>
+            <span class="crm-nav-link crm-nav-link--soon" aria-disabled="true" title="Equipo">
+              {% include "crm/_icono.html" with nombre="equipo" %}<span class="crm-nav-label">Equipo</span>
+            </span>
+          </li>
+          {% if user.is_superuser %}
+            <li>
+              <a class="crm-nav-link" href="{% url 'admin:index' %}" title="Admin de Django">
+                {% include "crm/_icono.html" with nombre="admin" %}<span class="crm-nav-label">Admin de Django</span>
+              </a>
+            </li>
+          {% endif %}
+          <li class="crm-nav-mobile-only">
+            <a class="crm-nav-link" href="{{ frontend_url }}" target="_blank" rel="noopener">
+              {% include "crm/_icono.html" with nombre="externo" %}<span class="crm-nav-label">Ver sitio público</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="crm-sidebar-card">
+        <p class="crm-sidebar-card-title">Ecuador a tu medida</p>
+        <p>Mira el sitio como lo ven los viajeros.</p>
+        <a class="crm-sidebar-card-link" href="{{ frontend_url }}" target="_blank" rel="noopener">
+          Ver sitio público {% include "crm/_icono.html" with nombre="externo" %}
+        </a>
+      </div>
+
+      <button type="button" class="crm-collapse-btn" aria-pressed="false" title="Contraer menú">
+        {% include "crm/_icono.html" with nombre="contraer" %}<span class="visually-hidden">Contraer menú</span>
+      </button>
+    </aside>
+
+    <div class="crm-main">
+      <header class="crm-topbar">
+        <form class="crm-search" action="{% url 'lead_list' %}" method="get" role="search">
+          {% include "crm/_icono.html" with nombre="buscar" %}
+          <label class="visually-hidden" for="crm-q">Buscar cotizaciones</label>
+          <input id="crm-q" name="q" type="search" value="{{ request.GET.q }}" placeholder="Buscar clientes por nombre o email…">
+        </form>
+
+        <div class="crm-user">
+          <span class="crm-date">{% now "l j \d\e F" %}</span>
+          <span class="crm-avatar" aria-hidden="true">{{ user.first_name|default:user.get_username|first|upper }}</span>
+          <span class="crm-user-name">
+            <strong>{{ user.get_full_name|default:user.get_username }}</strong>
+            <small>{% if user.is_superuser %}Administración{% else %}Equipo de ventas{% endif %}</small>
+          </span>
+          <form action="{% url 'logout' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="crm-icon-btn" title="Cerrar sesión">
+              {% include "crm/_icono.html" with nombre="salir" %}<span class="visually-hidden">Cerrar sesión</span>
+            </button>
+          </form>
+        </div>
+      </header>
+
+      <main class="crm-content">
+        {% include "partials/messages.html" %}
+        {% block content %}{% endblock %}
+      </main>
+    </div>
   </div>
+
+  <script>
+    // Barra lateral: contraer/expandir en escritorio (se recuerda) y abrir/cerrar el menú en móvil.
+    (function () {
+      const raiz = document.documentElement;
+      const contraer = document.querySelector(".crm-collapse-btn");
+      const menu = document.querySelector(".crm-menu-btn");
+
+      function pintarContraer() {
+        const contraido = raiz.classList.contains("crm-contraido");
+        contraer.setAttribute("aria-pressed", String(contraido));
+        contraer.title = contraido ? "Expandir menú" : "Contraer menú";
+        contraer.querySelector(".visually-hidden").textContent = contraer.title;
+      }
+      contraer.addEventListener("click", function () {
+        const contraido = raiz.classList.toggle("crm-contraido");
+        try { localStorage.setItem("crm-menu", contraido ? "contraido" : "abierto"); } catch (e) {}
+        pintarContraer();
+      });
+      pintarContraer();
+
+      menu.addEventListener("click", function () {
+        const abierto = raiz.classList.toggle("crm-menu-abierto");
+        menu.setAttribute("aria-expanded", String(abierto));
+        menu.querySelector(".visually-hidden").textContent = abierto ? "Cerrar menú" : "Abrir menú";
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && raiz.classList.contains("crm-menu-abierto")) menu.click();
+      });
+    })();
+  </script>
 {% endblock %}

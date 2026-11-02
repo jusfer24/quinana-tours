@@ -12,9 +12,9 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.generic import CreateView, DetailView, ListView, TemplateView
 
-from tours.models import LeadCotizacion, PagoHito, Tour
+from tours.models import LeadCotizacion, PagoHito
 
-from . import services
+from . import metricas, services
 from .forms import AsignarForm, CerrarForm, EstadoForm, LeadFiltroForm, LeadForm, NotaForm, PagoForm
 from .mixins import StaffRequiredMixin
 
@@ -22,20 +22,18 @@ Estado = LeadCotizacion.EstadoEmbudo
 
 
 class InicioView(StaffRequiredMixin, TemplateView):
-    """Portada del panel: resumen rápido y accesos directos."""
+    """Inicio del panel: indicadores, gráficas y pendientes del periodo elegido (ver metricas.py)."""
 
     template_name = "crm/inicio.html"
     seccion = "inicio"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        abiertas = LeadCotizacion.objects.exclude(estado_embudo=Estado.CERRADA)
-        context["resumen"] = {
-            "abiertas": abiertas.count(),
-            "sin_responsable": abiertas.filter(responsable__isnull=True).count(),
-            "mias": abiertas.filter(responsable=self.request.user).count(),
-            "tours": Tour.objects.count(),
-        }
+        context.update(metricas.panel(
+            self.request.user,
+            self.request.GET.get("periodo", metricas.PERIODO_INICIAL),
+            mes=self.request.GET.get("mes"),
+        ))
         return context
 
 

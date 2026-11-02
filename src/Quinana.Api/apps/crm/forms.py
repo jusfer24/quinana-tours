@@ -38,7 +38,7 @@ class LeadFiltroForm(EstiloPanelMixin, forms.Form):
 
     q = forms.CharField(
         label="Buscar", required=False,
-        widget=forms.SearchInput(attrs={"placeholder": "Nombre o email del cliente"}),
+        widget=forms.SearchInput(attrs={"placeholder": "Nombre o email"}),
     )
     estado = forms.ChoiceField(label="Estado", required=False)
     responsable = forms.ChoiceField(label="Responsable", required=False)
@@ -151,7 +151,7 @@ class EstadoForm(EstiloPanelMixin, forms.Form):
 
 
 class AsignarForm(EstiloPanelMixin, forms.Form):
-    responsable = PersonalChoiceField(label="Responsable", queryset=personal(), required=False, empty_label="Sin asignar")
+    responsable = PersonalChoiceField(label="Cambiar a", queryset=personal(), required=False, empty_label="Sin asignar")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -3,36 +3,290 @@
 {% block title %}Inicio · CRM Quinana Tours{% endblock %}
 
 {% block content %}
-  <div class="card">
-    <div class="card-header">
-      <div>
-        <h1>Hola, {{ user.first_name|default:user.get_username }}</h1>
-        <p class="muted muted--tight">Este es el resumen del panel de Quinana Tours.</p>
-      </div>
-      {% if perms.tours.add_leadcotizacion %}<a href="{% url 'lead_create' %}" class="btn btn-primary">+ Nueva cotización</a>{% endif %}
+  <header class="page-head">
+    <div>
+      <p class="eyebrow">Hola de nuevo, {{ user.first_name|default:user.get_username }}</p>
+      <h1 class="page-title">Tu centro de cotizaciones</h1>
     </div>
+    <div class="header-actions">
+      {# Filtro de periodo: acota todo lo que depende de fechas en esta página. #}
+      <nav class="segmented" aria-label="Periodo">
+        {% for clave, opcion in periodo.opciones.items %}
+          <a href="?periodo={{ clave }}{% if request.GET.mes %}&amp;mes={{ request.GET.mes|urlencode }}{% endif %}"{% if clave == periodo.clave %} aria-current="page"{% endif %}>{{ opcion.0 }}</a>
+        {% endfor %}
+      </nav>
+      {% if perms.tours.add_leadcotizacion %}
+        <a href="{% url 'lead_create' %}" class="btn btn-primary">{% include "crm/_icono.html" with nombre="mas" %} Nueva cotización</a>
+      {% endif %}
+    </div>
+  </header>
 
-    <ul class="stats">
-      <li class="stat">
-        <span class="stat-label">Cotizaciones abiertas</span>
-        <span class="stat-value">{{ resumen.abiertas }}</span>
-        <a class="link stat-link" href="{% url 'lead_embudo' %}">Ver embudo</a>
-      </li>
-      <li class="stat{% if resumen.sin_responsable %} stat--alert{% endif %}">
-        <span class="stat-label">Sin responsable</span>
-        <span class="stat-value">{{ resumen.sin_responsable }}</span>
-        <a class="link stat-link" href="{% url 'lead_list' %}?estado=abiertas&amp;responsable=sin">Ver cuáles</a>
-      </li>
-      <li class="stat">
-        <span class="stat-label">Asignadas a mí</span>
-        <span class="stat-value">{{ resumen.mias }}</span>
-        <a class="link stat-link" href="{% url 'lead_list' %}?estado=abiertas&amp;responsable=yo">Ver las mías</a>
-      </li>
-      <li class="stat">
-        <span class="stat-label">Tours en el catálogo</span>
-        <span class="stat-value">{{ resumen.tours }}</span>
-        <a class="link stat-link" href="{% url 'tour_list' %}">Ver catálogo</a>
-      </li>
-    </ul>
+  {# ---------------------------------------------------------------- Indicadores #}
+  <ul class="kpis" aria-label="Indicadores de los últimos {{ periodo.etiqueta }}">
+    <li class="kpi">
+      <span class="kpi-label">Solicitudes recibidas</span>
+      <span class="kpi-value">{{ kpi.recibidas.valor }}</span>
+      {% include "crm/_variacion.html" with cambio=kpi.recibidas.variacion unidad="%" %}
+      {% if kpi.recibidas.tendencia %}{% include "crm/_sparkline.html" with s=kpi.recibidas.tendencia %}{% endif %}
+    </li>
+    <li class="kpi">
+      <span class="kpi-label">Ventas ganadas</span>
+      <span class="kpi-value">{{ kpi.ganado.valor }}</span>
+      <span class="kpi-sub">{{ kpi.ganado.ventas }} viaje{{ kpi.ganado.ventas|pluralize }} vendido{{ kpi.ganado.ventas|pluralize }}</span>
+      {% include "crm/_variacion.html" with cambio=kpi.ganado.variacion unidad="%" %}
+      {% if kpi.ganado.tendencia %}{% include "crm/_sparkline.html" with s=kpi.ganado.tendencia %}{% endif %}
+    </li>
+    <li class="kpi">
+      <span class="kpi-label">Tasa de cierre</span>
+      <span class="kpi-value">{% if kpi.conversion.valor is None %}—{% else %}{{ kpi.conversion.valor }} %{% endif %}</span>
+      <span class="kpi-sub">{{ kpi.conversion.ganadas }} ganada{{ kpi.conversion.ganadas|pluralize }} de {{ kpi.conversion.cerradas }} cerrada{{ kpi.conversion.cerradas|pluralize }}</span>
+      {% include "crm/_variacion.html" with cambio=kpi.conversion.diferencia unidad=" pts" %}
+    </li>
+    <li class="kpi">
+      <span class="kpi-label">Primera respuesta</span>
+      <span class="kpi-value">{% if kpi.respuesta.horas is None %}—{% else %}{{ kpi.respuesta.horas }} h{% endif %}</span>
+      {% if kpi.respuesta.medidor is not None %}
+        <span class="meter" role="img" aria-label="Mediana de {{ kpi.respuesta.horas }} horas; la meta es {{ kpi.respuesta.meta }} horas">
+          <span class="meter-fill{% if not kpi.respuesta.cumple %} meter-fill--alerta{% endif %}" style="width: {{ kpi.respuesta.medidor|stringformat:"d" }}%"></span>
+          <span class="meter-goal" style="left: 50%" title="Meta: {{ kpi.respuesta.meta }} h"></span>
+        </span>
+        <span class="status {% if kpi.respuesta.cumple %}status--ok{% else %}status--alerta{% endif %}">
+          {% if kpi.respuesta.cumple %}✓ Dentro de la meta de {{ kpi.respuesta.meta }} h{% else %}! Sobre la meta de {{ kpi.respuesta.meta }} h{% endif %}
+        </span>
+        <span class="kpi-sub">{{ kpi.respuesta.pct_a_tiempo }} % respondidas en menos de {{ kpi.respuesta.meta }} h{% if kpi.respuesta.sin_respuesta %} · {{ kpi.respuesta.sin_respuesta }} sin respuesta{% endif %}</span>
+      {% else %}
+        <span class="kpi-sub">Sin solicitudes respondidas en el periodo.</span>
+      {% endif %}
+    </li>
+  </ul>
+
+  <div class="dash-grid">
+    {# ---------------------------------------------------------------- Solicitudes en el tiempo #}
+    <section class="card dash-card dash-card--full" aria-labelledby="g-solicitudes">
+      <header class="dash-card-head">
+        <div>
+          <h2 class="section-title" id="g-solicitudes">Solicitudes por {% if periodo.clave == "365" %}mes{% else %}semana{% endif %}</h2>
+          <p class="dash-card-sub">{{ solicitudes.total }} en los últimos {{ periodo.etiqueta }}; {{ solicitudes.ganadas }} ya se convirtieron en venta.</p>
+        </div>
+        <ul class="legend" aria-label="Leyenda">
+          <li><span class="legend-key legend-key--dato"></span>Ganadas</li>
+          <li><span class="legend-key legend-key--contexto"></span>Resto de solicitudes</li>
+        </ul>
+      </header>
+
+      {% with g=solicitudes %}
+        <div class="chart-scroll">
+        <svg class="chart" viewBox="0 0 {{ g.ancho }} {{ g.alto }}" role="img" aria-labelledby="g-solicitudes">
+          {% for m in g.marcas %}
+            <line class="chart-grid" x1="{{ g.izq }}" x2="{{ g.ancho }}" y1="{{ m.y|stringformat:".1f" }}" y2="{{ m.y|stringformat:".1f" }}"/>
+            <text class="chart-tick" x="{{ g.izq|add:-8 }}" y="{{ m.y|stringformat:".1f" }}" dy="0.32em" text-anchor="end">{{ m.valor }}</text>
+          {% endfor %}
+          {% for d in g.datos %}
+            <g class="chart-mark" tabindex="0" data-tip-title="{% if periodo.clave == '365' %}{{ d.inicio|date:'F Y' }}{% else %}Semana del {{ d.inicio|date:'j \d\e F' }}{% endif %}" data-tip-rows="Recibidas|{{ d.total }};Ganadas|{{ d.ganadas }}">
+              <rect class="chart-hit" x="{{ d.hit_x|stringformat:".1f" }}" y="{{ g.arriba }}" width="{{ d.hit_ancho|stringformat:".1f" }}" height="{{ g.alto_plot }}"/>
+              {% if d.trazo_resto %}<path class="chart-bar chart-bar--contexto" d="{{ d.trazo_resto }}"/>{% endif %}
+              {% if d.trazo_ganadas %}<path class="chart-bar chart-bar--dato" d="{{ d.trazo_ganadas }}"/>{% endif %}
+              {% if d == g.pico %}<text class="chart-label" x="{{ d.x_etiqueta|stringformat:".1f" }}" y="{{ d.y_valor|stringformat:".1f" }}" text-anchor="middle">{{ d.total }}</text>{% endif %}
+            </g>
+            {% if d.mostrar_etiqueta %}
+              <text class="chart-tick" x="{{ d.x_etiqueta|stringformat:".1f" }}" y="{{ g.y_etiquetas }}" text-anchor="middle">{{ d.etiqueta }}</text>
+            {% endif %}
+          {% endfor %}
+          <line class="chart-axis" x1="{{ g.izq }}" x2="{{ g.ancho }}" y1="{{ g.base|stringformat:".1f" }}" y2="{{ g.base|stringformat:".1f" }}"/>
+        </svg>
+        </div>
+
+        <details class="data-table">
+          <summary>Ver datos</summary>
+          <table class="table table--compact">
+            <thead><tr><th scope="col">{% if periodo.clave == "365" %}Mes{% else %}Semana del{% endif %}</th><th scope="col">Recibidas</th><th scope="col">Ganadas</th></tr></thead>
+            <tbody>
+              {% for d in g.datos %}<tr><td>{{ d.etiqueta }}</td><td>{{ d.total }}</td><td>{{ d.ganadas }}</td></tr>{% endfor %}
+            </tbody>
+          </table>
+        </details>
+      {% endwith %}
+    </section>
+
+    {# ---------------------------------------------------------------- Requieren atención #}
+    <section class="card dash-card" aria-labelledby="g-atencion">
+      <header class="dash-card-head">
+        <div>
+          <h2 class="section-title" id="g-atencion">Requieren atención</h2>
+          <p class="dash-card-sub">
+            {% if avisos_total %}{{ avisos_total }} cotizaci{{ avisos_total|pluralize:"ón,ones" }} necesita{{ avisos_total|pluralize:",n" }} una acción hoy.{% else %}Nada pendiente: todas las cotizaciones abiertas están atendidas.{% endif %}
+          </p>
+        </div>
+      </header>
+      {% if avisos %}
+        <ul class="alerts">
+          {% for aviso in avisos %}
+            <li class="alert-row alert-row--{{ aviso.tipo }}">
+              <span class="alert-icon">{% include "crm/_icono.html" with nombre="alerta" %}</span>
+              <span class="alert-body">
+                <a class="link" href="{% url 'lead_detail' aviso.lead.pk %}">{{ aviso.lead.nombre_cliente }}</a>
+                <span class="cell-sub">{{ aviso.lead.tour }} · {{ aviso.lead.numero_pasajeros }} pax</span>
+              </span>
+              <span class="alert-reason">{{ aviso.motivo }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </section>
+
+    {# ---------------------------------------------------------------- Calendario de viajes confirmados #}
+    <section class="card dash-card dash-card--wide" id="viajes" aria-labelledby="g-viajes">
+      <header class="dash-card-head">
+        <div>
+          <h2 class="section-title" id="g-viajes">Viajes confirmados</h2>
+          <p class="dash-card-sub">
+            {% with n=viajes.salidas_mes|length %}{% if n %}{{ n }} salida{{ n|pluralize }} y {{ viajes.pasajeros_mes }} pasajero{{ viajes.pasajeros_mes|pluralize }} este mes.{% else %}Sin salidas este mes.{% endif %}{% endwith %}
+          </p>
+        </div>
+      </header>
+
+      <div class="cal-nav">
+        <a class="crm-icon-btn cal-nav-btn" href="?periodo={{ periodo.clave }}&amp;mes={{ viajes.anterior }}#viajes" title="Mes anterior">
+          <span aria-hidden="true">‹</span><span class="visually-hidden">Mes anterior</span>
+        </a>
+        <p class="cal-month" aria-live="polite">{{ viajes.mes|date:"F Y" }}</p>
+        <a class="crm-icon-btn cal-nav-btn" href="?periodo={{ periodo.clave }}&amp;mes={{ viajes.siguiente }}#viajes" title="Mes siguiente">
+          <span aria-hidden="true">›</span><span class="visually-hidden">Mes siguiente</span>
+        </a>
+      </div>
+
+      <table class="cal">
+        <caption class="visually-hidden">Salidas de viajes confirmados en {{ viajes.mes|date:"F Y" }}</caption>
+        <thead>
+          <tr>{% for d in viajes.dias_semana %}<th scope="col">{{ d }}</th>{% endfor %}</tr>
+        </thead>
+        <tbody>
+          {% for semana in viajes.semanas %}
+            <tr>
+              {% for dia in semana %}
+                <td class="cal-cell{% if not dia.del_mes %} cal-cell--fuera{% endif %}{% if dia.en_ruta %} cal-cell--ruta{% endif %}{% if dia.hoy %} cal-cell--hoy{% endif %}{% if dia.pasado %} cal-cell--pasado{% endif %}"
+                    {% if dia.salidas %}tabindex="0" data-tip-title="Salen el {{ dia.fecha|date:'j \d\e F' }}" data-tip-rows="{{ dia.tip }}"{% endif %}
+                    aria-label="{{ dia.fecha|date:'j \d\e F' }}{% if dia.salidas %}: {{ dia.salidas }} salida{{ dia.salidas|pluralize }}{% elif dia.en_ruta %}: grupo en viaje{% endif %}{% if dia.hoy %} (hoy){% endif %}">
+                  <span class="cal-num">{{ dia.fecha.day }}</span>
+                  {% if dia.salidas %}<span class="cal-dot" aria-hidden="true"></span>{% endif %}
+                  {% for chip in dia.chips %}<a class="cal-chip" href="{% url 'lead_detail' chip.pk %}" tabindex="-1">{{ chip.texto }}</a>{% endfor %}
+                  {% if dia.mas %}<span class="cal-more">+{{ dia.mas }} más</span>{% endif %}
+                </td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <ul class="legend cal-legend" aria-label="Leyenda">
+        <li><span class="legend-key legend-key--dato"></span>Salida</li>
+        <li><span class="legend-key legend-key--ruta"></span>Grupo en viaje</li>
+        <li><span class="legend-key legend-key--hoy"></span>Hoy</li>
+      </ul>
+
+    </section>
+
+    {# ---------------------------------------------------------------- Destinos #}
+    <section class="card dash-card" aria-labelledby="g-destinos">
+      <header class="dash-card-head">
+        <div>
+          <h2 class="section-title" id="g-destinos">Demanda por destino</h2>
+          <p class="dash-card-sub">Solicitudes de los últimos {{ periodo.etiqueta }}.</p>
+        </div>
+      </header>
+      <ul class="hbars">
+        {% for fila in destinos %}
+          <li class="hbar-row" tabindex="0" data-tip-title="{{ fila.etiqueta }}" data-tip-rows="Solicitudes|{{ fila.cantidad }};Valor estimado|{{ fila.total_txt }} USD">
+            <span class="hbar-label">{{ fila.etiqueta }}</span>
+            <span class="hbar-track"><span class="hbar" style="width: {{ fila.pct|stringformat:".1f" }}%"></span></span>
+            <span class="hbar-value"><strong>{{ fila.cantidad }}</strong></span>
+          </li>
+        {% empty %}
+          <li class="muted">Sin solicitudes en el periodo.</li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    {# ---------------------------------------------------------------- Origen #}
+    <section class="card dash-card" aria-labelledby="g-origen">
+      <header class="dash-card-head">
+        <div>
+          <h2 class="section-title" id="g-origen">¿Por dónde llegan?</h2>
+          <p class="dash-card-sub">Canal de cada solicitud del periodo.</p>
+        </div>
+      </header>
+      <ul class="hbars">
+        {% for fila in origenes %}
+          <li class="hbar-row">
+            <span class="hbar-label">{{ fila.etiqueta }}</span>
+            <span class="hbar-track"><span class="hbar" style="width: {{ fila.pct|stringformat:".1f" }}%"></span></span>
+            <span class="hbar-value"><strong>{{ fila.cantidad }}</strong></span>
+          </li>
+        {% empty %}
+          <li class="muted">Sin solicitudes en el periodo.</li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    {# ---------------------------------------------------------------- Equipo #}
+    <section class="card dash-card" aria-labelledby="g-equipo">
+      <header class="dash-card-head">
+        <div>
+          <h2 class="section-title" id="g-equipo">Equipo</h2>
+          <p class="dash-card-sub">Ventas de los últimos {{ periodo.etiqueta }} y cartera abierta.</p>
+        </div>
+      </header>
+      <table class="table table--compact">
+        <thead><tr><th scope="col">Persona</th><th scope="col" class="num">Abiertas</th><th scope="col" class="num">Ganado</th></tr></thead>
+        <tbody>
+          {% for fila in equipo %}
+            <tr{% if fila.es_yo %} class="is-me"{% endif %}>
+              <td>{{ fila.nombre }}{% if fila.es_yo %} <span class="badge">Tú</span>{% endif %}</td>
+              <td class="num">{{ fila.abiertas }}</td>
+              <td class="num">{{ fila.ganado_txt }}<span class="cell-sub">{{ fila.ganadas }} venta{{ fila.ganadas|pluralize }}</span></td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="3" class="empty">Aún no hay cotizaciones asignadas.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
   </div>
+
+  <div class="chart-tooltip" role="tooltip" hidden></div>
+  <script>
+    // Tooltip de las gráficas: muestra el periodo y los valores del elemento bajo el puntero
+    // o con foco. Los textos se insertan con textContent (nunca innerHTML).
+    (function () {
+      const tip = document.querySelector(".chart-tooltip");
+      function mostrar(el, x, y) {
+        tip.replaceChildren();
+        const titulo = document.createElement("p");
+        titulo.className = "chart-tooltip-title";
+        titulo.textContent = el.dataset.tipTitle;
+        tip.append(titulo);
+        for (const fila of el.dataset.tipRows.split(";")) {
+          const [nombre, valor] = fila.split("|");
+          const p = document.createElement("p");
+          const b = document.createElement("strong");
+          b.textContent = valor;
+          p.append(b, " " + nombre);
+          tip.append(p);
+        }
+        tip.hidden = false;
+        const ancho = tip.offsetWidth;
+        tip.style.left = Math.min(x + 14, window.innerWidth - ancho - 8) + "px";
+        tip.style.top = y + 14 + "px";
+      }
+      document.querySelectorAll("[data-tip-rows]").forEach(function (el) {
+        el.addEventListener("pointermove", function (e) { mostrar(el, e.clientX, e.clientY); });
+        el.addEventListener("pointerleave", function () { tip.hidden = true; });
+        el.addEventListener("focus", function () {
+          const r = el.getBoundingClientRect();
+          mostrar(el, r.left + r.width / 2, r.top);
+        });
+        el.addEventListener("blur", function () { tip.hidden = true; });
+      });
+    })();
+  </script>
 {% endblock %}

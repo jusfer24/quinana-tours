@@ -3,13 +3,15 @@
 Ejecutar con:  python manage.py test crm
 """
 
+import re
 from datetime import timedelta
 from decimal import Decimal
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
-from django.test import TestCase
+from django.core.cache import cache
+from django.test import Client, TestCase
 from django.urls import reverse
 from django.utils import timezone
 
@@ -18,6 +20,13 @@ from tours.models import ActividadLead, Destination, LeadCotizacion, PagoHito, T
 from . import services
 
 PASSWORD = "Quinana-2026!"
+
+
+def enlace_activo(response):
+    """Texto del enlace del menú marcado con aria-current="page" (sin el ícono)."""
+    html = response.content.decode()
+    enlace = re.search(r'aria-current="page">(.*?)</a>', html, re.S).group(1)
+    return re.sub(r"<svg.*?</svg>|<[^>]+>", "", enlace, flags=re.S).split()[0]
 Estado = LeadCotizacion.EstadoEmbudo
 
 
@@ -47,16 +56,16 @@ class PanelAccessTestCase(TestCase):
         self.client.force_login(self.staff)
         response = self.client.get(reverse("crm_inicio"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Cotizaciones abiertas")
+        self.assertContains(response, "Solicitudes recibidas")
         self.assertContains(response, 'href="%s"' % reverse("tour_list"))
         # La sección activa queda marcada para lectores de pantalla.
-        self.assertContains(response, 'aria-current="page">Inicio')
+        self.assertEqual(enlace_activo(response), "Inicio")
 
     def test_catalogo_marca_su_seccion(self):
         self.client.force_login(self.staff)
         response = self.client.get(reverse("tour_list"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'aria-current="page">Tours')
+        self.assertEqual(enlace_activo(response), "Tours")
 
     def test_raiz_lleva_al_inicio_del_panel(self):
         self.assertRedirects(self.client.get("/"), reverse("crm_inicio"), fetch_redirect_response=False)
@@ -226,3 +235,128 @@ class LeadDetailActionsTests(LeadTestCase):
 
         self.lector.user_permissions.add(Permission.objects.get(codename="change_leadcotizacion"))
         self.assertEqual(self.accion("estado", estado=Estado.SEGUIMIENTO).status_code, 302)
+
+
+class SolicitudCotizacionApiTests(TestCase):
+    """POST /api/cotizaciones/: formulario "Solicitar cotización" del sitio público."""
+
+    @classmethod
+    def setUpTestData(cls):
+        andes, _ = Destination.objects.get_or_create(name="Andes")
+        cls.tour = Tour.objects.create(
+            title="Quilotoa", destination=andes, duration_days=2,
+            description="Laguna del Quilotoa.", price_usd=Decimal("500.00"),
+        )
+
+    def setUp(self):
+        cache.clear()  # el límite de envíos se guarda en la caché
+
+    def datos(self, **cambios):
+        return {
+            "nombre": "  Emily   Carter ", "email": "Emily@Test.com", "telefono": "+1 415 555 0134",
+            "tour": self.tour.pk, "pasajeros": 2,
+            "fecha": (timezone.localdate() + timedelta(days=45)).isoformat(),
+            "mensaje": "Luna de miel", **cambios,
+        }
+
+    def post(self, data):
+        return self.client.post(reverse("api_cotizaciones"), data, content_type="application/json")
+
+    def test_crea_la_cotizacion_su_contacto_y_su_historial(self):
+        self.assertEqual(self.post(self.datos()).status_code, 201)
+        lead = LeadCotizacion.objects.get()
+        self.assertEqual(lead.nombre_cliente, "Emily Carter")
+        self.assertEqual(lead.email_cliente, "emily@test.com")
+        self.assertEqual(lead.estado_embudo, Estado.NUEVA)
+        self.assertEqual(lead.origen_lead, "Sitio web")
+        self.assertEqual(lead.contactos.get().canal_preferido, "WHATSAPP")
+        self.assertEqual(lead.actividades.get().tipo, ActividadLead.Tipo.CREACION)
+
+    def test_valida_los_datos(self):
+        response = self.post(self.datos(
+            nombre="", email="no-es-correo", tour=999, pasajeros=0,
+            fecha=timezone.localdate().isoformat(), telefono="12",
+        ))
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            set(response.json()), {"nombre", "email", "tour", "pasajeros", "fecha", "telefono"}
+        )
+        self.assertFalse(LeadCotizacion.objects.exists())
+
+    def test_campo_trampa_ignora_a_los_bots(self):
+        self.assertEqual(self.post(self.datos(website="http://spam.example")).status_code, 201)
+        self.assertFalse(LeadCotizacion.objects.exists())
+
+    def test_exige_csrf(self):
+        client = Client(enforce_csrf_checks=True)
+        response = client.post(reverse("api_cotizaciones"), self.datos(), content_type="application/json")
+        self.assertEqual(response.status_code, 403)
+
+    def test_limita_los_envios_por_ip(self):
+        for _ in range(10):
+            self.assertEqual(self.post(self.datos()).status_code, 201)
+        self.assertEqual(self.post(self.datos()).status_code, 429)
+
+
+class InicioMetricasTests(LeadTestCase):
+    """Indicadores del inicio (crm/metricas.py) con datos controlados."""
+
+    def cerrar(self, nombre, resultado, hace_dias):
+        lead = LeadCotizacion.objects.create(
+            nombre_cliente=nombre, email_cliente=f"{nombre}@test.com", tour=self.tour,
+            numero_pasajeros=2, fecha_estimada=timezone.localdate() + timedelta(days=40),
+            # Llegó antes del periodo: solo cuenta su cierre, no su tiempo de respuesta.
+            created_at=timezone.now() - timedelta(days=hace_dias + 40),
+        )
+        services.cerrar(lead, resultado, "" if resultado == "GANADA" else "Precio", self.admin)
+        LeadCotizacion.objects.filter(pk=lead.pk).update(fecha_cierre=timezone.now() - timedelta(days=hace_dias))
+        return lead
+
+    def test_indicadores_del_periodo(self):
+        self.cerrar("ganada", "GANADA", 3)
+        self.cerrar("perdida", "PERDIDA", 4)
+        self.cerrar("antigua", "GANADA", 60)  # fuera del periodo de 30 días
+        # La cotización de setUp se responde 2 horas después de llegar.
+        ActividadLead.objects.create(
+            lead=self.lead, autor=self.admin, tipo=ActividadLead.Tipo.NOTA, texto="Llamada",
+            fecha=self.lead.created_at + timedelta(hours=2),
+        )
+        response = self.client.get(reverse("crm_inicio"), {"periodo": "30"})
+        kpi = response.context["kpi"]
+        self.assertEqual(kpi["conversion"]["valor"], 50)  # 1 ganada de 2 cerradas en 30 días
+        self.assertEqual(kpi["ganado"]["valor"], "$1 000")  # 500 USD × 2 pax
+        self.assertEqual(kpi["respuesta"]["horas"], 2)
+        self.assertTrue(kpi["respuesta"]["cumple"])
+
+    def test_avisa_las_nuevas_sin_responsable(self):
+        LeadCotizacion.objects.filter(pk=self.lead.pk).update(created_at=timezone.now() - timedelta(days=2))
+        response = self.client.get(reverse("crm_inicio"))
+        avisos = response.context["avisos"]
+        self.assertEqual(avisos[0]["lead"], self.lead)
+        self.assertIn("Sin responsable", avisos[0]["motivo"])
+
+    def test_periodo_desconocido_usa_el_inicial(self):
+        response = self.client.get(reverse("crm_inicio"), {"periodo": "999"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["periodo"]["clave"], "90")
+
+    def test_coordenadas_del_svg_con_punto_decimal(self):
+        # Con el idioma en español, floatformat pondría coma decimal y rompería el SVG.
+        response = self.client.get(reverse("crm_inicio"))
+        self.assertNotRegex(response.content.decode(), r'(x|y|width|cx|cy)="\d+,\d')
+
+    def test_calendario_marca_la_salida_y_los_dias_de_viaje(self):
+        # Tour de 2 días que sale el día 10 del mes siguiente.
+        salida = (timezone.localdate().replace(day=1) + timedelta(days=40)).replace(day=10)
+        LeadCotizacion.objects.filter(pk=self.lead.pk).update(fecha_estimada=salida)
+        services.cerrar(self.lead, "GANADA", "", self.admin)
+        response = self.client.get(reverse("crm_inicio"), {"mes": salida.strftime("%Y-%m")})
+        dias = {d["fecha"]: d for semana in response.context["viajes"]["semanas"] for d in semana}
+        self.assertEqual(dias[salida]["salidas"], 1)
+        self.assertEqual(dias[salida]["chips"][0]["texto"], "Emily · 2 pax")
+        self.assertEqual(dias[salida + timedelta(days=1)]["en_ruta"], 1)  # segundo día del tour
+        self.assertEqual(dias[salida + timedelta(days=2)]["en_ruta"], 0)
+
+    def test_mes_invalido_muestra_el_mes_actual(self):
+        response = self.client.get(reverse("crm_inicio"), {"mes": "no-es-fecha"})
+        self.assertEqual(response.context["viajes"]["mes"], timezone.localdate().replace(day=1))

@@ -80,6 +80,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_RENDERER_CLASSES': ['rest_framework.renderers.JSONRenderer'],
+    # Solicitudes de cotización del sitio público: máximo por IP (frena bots y envíos repetidos).
+    'DEFAULT_THROTTLE_RATES': {'cotizaciones': '10/hour'},
 }
 
 

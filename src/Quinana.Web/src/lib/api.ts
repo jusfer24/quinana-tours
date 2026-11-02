@@ -8,11 +8,15 @@
 
 export const API_URL = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8000";
 
-/** Error de la API. `fields` trae los errores por campo que devuelve Django ({ email: ["..."] }). */
+/**
+ * Error de la API. `fields` trae los errores por campo que devuelve Django ({ email: ["..."] })
+ * y `status` el código HTTP (p. ej. 429 si se superó el límite de envíos); 0 = sin conexión.
+ */
 export class ApiError extends Error {
 	constructor(
 		message: string,
 		readonly fields: Record<string, string[]> = {},
+		readonly status = 0,
 	) {
 		super(message);
 	}
@@ -48,7 +52,7 @@ export async function post<T = unknown>(path: string, body: unknown): Promise<T>
 	if (response.status === 400 && data && typeof data === "object") {
 		const { detail, non_field_errors, ...fields } = data;
 		const message = detail ?? non_field_errors?.[0] ?? "Revisa los datos del formulario.";
-		throw new ApiError(message, fields);
+		throw new ApiError(message, fields, response.status);
 	}
-	throw new ApiError(GENERIC_ERROR);
+	throw new ApiError(GENERIC_ERROR, {}, response.status);
 }
