@@ -1,23 +1,47 @@
+---
+// Plantilla base de las páginas públicas: encabezado, contenido y pie, en español o inglés
+// según la URL. El acceso (/login) tiene su propio diseño y no usa esta plantilla.
+import { Font } from "astro:assets";
+import SiteFooter from "../components/SiteFooter.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import { homePath, langFrom, languages, type Lang } from "../i18n/ui";
+import "../styles/global.css";
+
+interface Props {
+	title: string;
+	description: string;
+}
+
+const { title, description } = Astro.props;
+const lang = langFrom(Astro.currentLocale);
+const site = Astro.site ?? Astro.url;
+---
+
 <!doctype html>
-<html lang="en">
+<html lang={lang}>
 	<head>
 		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="icon" href="/favicon.ico" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
+		<title>{title}</title>
+		<meta name="description" content={description} />
+		<!-- Versiones en cada idioma, para que Google muestre la correcta -->
+		{
+			(Object.keys(languages) as Lang[]).map((code) => (
+				<link rel="alternate" hreflang={code} href={new URL(homePath[code], site).href} />
+			))
+		}
+		<link rel="alternate" hreflang="x-default" href={new URL(homePath.en, site).href} />
+		<Font cssVariable="--font-bricolage" preload />
+		<Font cssVariable="--font-instrument" preload />
 	</head>
-	<body>
-		<slot />
+	<body class="bg-white font-sans text-tinta antialiased">
+		<SiteHeader lang={lang} />
+		<main>
+			<slot />
+		</main>
+		<SiteFooter lang={lang} />
 	</body>
 </html>
-
-<style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
-</style>

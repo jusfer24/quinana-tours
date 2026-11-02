@@ -1,0 +1,1110 @@
+/* Estilos del panel interno (CRM: menú lateral, inicio y catálogo de tours).
+   Misma paleta "Selva y tierra" que el acceso del sitio Astro
+   (src/Quinana.Web/src/pages/login.astro y src/styles/auth.css), donde inicia sesión
+   el equipo. Para cambiar los colores basta con editar :root. */
+
+:root {
+  --color-page: #134e4a; /* fondo de la página: verde azulado */
+  --color-page-deep: #0b3533;
+  --color-page-light: rgba(250, 243, 228, 0.1); /* luces crema muy tenues */
+  --color-heading: #1f3d2b; /* verde bosque: títulos */
+  --color-surface: #ffffff;
+  --color-primary: #1f3d2b;
+  --color-primary-hover: #2e5a3f;
+  --color-on-primary: #ffffff;
+  --color-accent: #c2562e; /* terracota: enlaces */
+  --color-text: #1b2420;
+  --color-text-soft: #5d6b63;
+  --color-border: #cddbd1;
+  --color-focus: rgba(46, 90, 63, 0.12);
+  --color-focus-ring: rgba(46, 90, 63, 0.35);
+  --color-error: #b42318;
+  --color-error-soft: #fdecea;
+  --color-success-soft: #e7f3ec;
+  --glass-strong: rgba(255, 255, 255, 0.85);
+  --glass-soft: rgba(255, 255, 255, 0.78);
+  --glass-border: rgba(255, 255, 255, 0.6);
+  --glass-blur: blur(22px) saturate(160%);
+  --radius: 0.6rem;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5;
+  color: var(--color-text);
+  /* Verde azulado con dos luces crema tenues, igual que el acceso del sitio público. */
+  background:
+    radial-gradient(ellipse 60% 50% at 12% 8%, var(--color-page-light), transparent 70%),
+    radial-gradient(ellipse 55% 45% at 90% 95%, var(--color-page-light), transparent 70%),
+    linear-gradient(155deg, var(--color-page) 0%, var(--color-page-deep) 100%);
+  background-attachment: fixed;
+}
+
+h1 {
+  margin: 0 0 1rem;
+  font-size: 1.6rem;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--color-heading);
+}
+
+.muted {
+  margin: 0 0 1.25rem;
+  color: var(--color-text-soft);
+}
+
+/* ---------- Barra superior ---------- */
+.topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 1.25rem 1rem;
+}
+
+.brand {
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #fff;
+  text-decoration: none;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.3);
+}
+
+.brand:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+.topbar-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.topbar-user form {
+  margin: 0;
+}
+
+/* ---------- Contenido ---------- */
+.container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 1rem 2.5rem;
+}
+
+.card {
+  padding: 1.5rem;
+  background: var(--glass-strong);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: 1.5rem;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.3);
+}
+
+.card--narrow {
+  max-width: 640px;
+  margin-inline: auto;
+}
+
+.card--center {
+  text-align: center;
+}
+
+.card-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.card-header h1 {
+  margin: 0;
+}
+
+/* ---------- Mensajes ---------- */
+.messages {
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.messages .alert + .alert {
+  margin-top: 0.5rem;
+}
+
+.alert {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  color: var(--color-primary);
+  background: var(--color-success-soft);
+  border: 1px solid #c3dfcd;
+  border-radius: var(--radius);
+}
+
+.messages .alert {
+  margin: 0;
+}
+
+.alert--info {
+  background: #eef4f8;
+  border-color: #cfe0ea;
+  color: #234556;
+}
+
+.alert--error,
+.alert--warning {
+  color: var(--color-error);
+  background: var(--color-error-soft);
+  border-color: #f5c2bd;
+}
+
+/* ---------- Tabla del catálogo ---------- */
+.table-wrapper {
+  overflow-x: auto;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.table th,
+.table td {
+  padding: 0.85rem 1rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid #e6eee9;
+}
+
+.table th {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-soft);
+  background: #f4f7f5;
+  white-space: nowrap;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table tbody tr:hover {
+  background: #f8fbf9;
+}
+
+.actions {
+  white-space: nowrap;
+}
+
+.actions .link + .link {
+  margin-left: 0.9rem;
+}
+
+.empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--color-text-soft);
+}
+
+.link {
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.link--danger {
+  color: var(--color-error);
+}
+
+/* ---------- Formularios ---------- */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.field > label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  font: inherit;
+  font-size: 1rem; /* 16px evita el zoom automático en iOS */
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+textarea.form-input {
+  min-height: 7rem;
+  resize: vertical;
+}
+
+.form-input::placeholder {
+  color: #9aa8a0;
+}
+
+.form-input:hover {
+  border-color: #a9bfb0;
+}
+
+.form-input:focus-visible {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-focus);
+}
+
+.field-error {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--color-error);
+}
+
+.field:has(.field-error) .form-input {
+  border-color: var(--color-error);
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.form-actions--center {
+  justify-content: center;
+}
+
+/* ---------- Botones ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.25rem;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  border: 1.5px solid transparent;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.btn-block {
+  width: 100%;
+  padding-block: 0.85rem;
+  font-size: 1rem;
+}
+
+.btn-primary {
+  color: var(--color-on-primary);
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.btn-primary:hover {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+.btn-secondary {
+  color: var(--color-text);
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+.btn-secondary:hover {
+  background: #f6faf7;
+  border-color: var(--color-primary);
+}
+
+.btn-danger {
+  color: #fff;
+  background: var(--color-error);
+  border-color: var(--color-error);
+}
+
+.btn-danger:hover {
+  background: #912018;
+  border-color: #912018;
+}
+
+/* Sobre la barra superior verde. */
+.btn-ghost {
+  padding: 0.5rem 0.9rem;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* ---------- Panel (CRM): menú lateral + contenido ---------- */
+.brand-tag {
+  margin-left: 0.35rem;
+  padding: 0.1rem 0.45rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  vertical-align: 0.1em;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 0.4rem;
+  text-shadow: none;
+}
+
+.muted--tight {
+  margin: 0.25rem 0 0;
+}
+
+/* Móvil: el menú es una fila que se desplaza en horizontal, encima del contenido. */
+.crm-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 1rem 2.5rem;
+}
+
+.crm-main {
+  min-width: 0; /* deja que las tablas anchas se desplacen dentro de su contenedor */
+}
+
+.crm-nav {
+  padding: 0.5rem;
+  background: var(--glass-strong);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: 1rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.22);
+}
+
+.crm-nav-list {
+  display: flex;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  list-style: none;
+  scrollbar-width: thin;
+}
+
+.crm-nav-group {
+  display: none;
+}
+
+.crm-nav-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.55rem 0.8rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--color-text);
+  text-decoration: none;
+  white-space: nowrap;
+  border-radius: var(--radius);
+  transition: background 0.15s, color 0.15s;
+}
+
+a.crm-nav-link:hover {
+  background: var(--color-focus);
+}
+
+.crm-nav-link:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 1px;
+}
+
+.crm-nav-link[aria-current="page"] {
+  color: var(--color-on-primary);
+  background: var(--color-primary);
+}
+
+.crm-nav-link--soon {
+  color: var(--color-text-soft);
+  cursor: default;
+}
+
+.badge {
+  padding: 0.1rem 0.45rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--color-text-soft);
+  background: #edf2ee;
+  border-radius: 999px;
+}
+
+/* ---------- Tarjetas de resumen (inicio) ---------- */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem 1.15rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-soft);
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--color-heading);
+}
+
+.stat--alert {
+  border-color: #f0c7a9;
+  background: #fdf4ee;
+}
+
+.stat--alert .stat-value {
+  color: var(--color-accent);
+}
+
+.stat-link {
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+}
+
+/* ---------- Utilidades del CRM ---------- */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.btn-sm {
+  padding: 0.5rem 0.85rem;
+  font-size: 0.875rem;
+}
+
+.btn-full {
+  width: 100%;
+}
+
+.badge--alert {
+  color: #fff;
+  background: var(--color-accent);
+}
+
+[aria-current="page"] .badge--alert {
+  color: var(--color-primary);
+  background: #fff;
+}
+
+.cell-sub {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--color-text-soft);
+}
+
+.tag-warn {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+.section-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.05rem;
+  color: var(--color-heading);
+}
+
+.detail-main > .card + .card,
+.detail-side > .card + .card {
+  margin-top: 1rem;
+}
+
+.card-header--tight {
+  margin-bottom: 0.75rem;
+}
+
+.card-header--tight .section-title {
+  margin: 0;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.back-link--light {
+  font-weight: 600;
+  color: #fff;
+  text-decoration: none;
+}
+
+.back-link--light:hover {
+  text-decoration: underline;
+}
+
+/* Etiqueta de estado del embudo, del resultado y de los pagos. */
+.estado {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+  border-radius: 999px;
+  color: #234556;
+  background: #e3eef5;
+}
+
+.estado--nueva { color: #8a3b17; background: #fde7da; }
+.estado--seguimiento { color: #234556; background: #e3eef5; }
+.estado--cotizada { color: #5b3f8c; background: #eee7f8; }
+.estado--negociacion,
+.estado--pago-pendiente { color: #7a5a00; background: #fbf0cc; }
+.estado--ganada,
+.estado--pago-aprobada { color: #1f5a37; background: #dcefe3; }
+.estado--perdida,
+.estado--pago-fallida { color: var(--color-error); background: var(--color-error-soft); }
+.estado--cancelada,
+.estado--pago-reembolsada { color: #4b5550; background: #e9ecea; }
+
+/* ---------- Cotizaciones: cabecera, filtros, paginación ---------- */
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.segmented {
+  display: inline-flex;
+  padding: 0.2rem;
+  background: #edf2ee;
+  border-radius: var(--radius);
+}
+
+.segmented a {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-soft);
+  text-decoration: none;
+  border-radius: 0.45rem;
+}
+
+.segmented a[aria-current="page"] {
+  color: var(--color-text);
+  background: var(--color-surface);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  align-items: end;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: #f4f7f5;
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+}
+
+.field--compact > label {
+  font-size: 0.78rem;
+}
+
+.field--compact .form-input {
+  padding: 0.55rem 0.7rem;
+  font-size: 0.9rem;
+}
+
+.filters-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.result-count {
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+/* ---------- Embudo (kanban): una columna por etapa, desplazable en horizontal ---------- */
+.kanban {
+  display: grid;
+  grid-auto-columns: minmax(230px, 1fr);
+  grid-auto-flow: column;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.kanban-col {
+  display: flex;
+  flex-direction: column;
+  min-height: 12rem;
+  background: #f4f7f5;
+  border: 1px solid var(--color-border);
+  border-top: 4px solid #8fa79a;
+  border-radius: 1rem;
+}
+
+.kanban-col--nueva { border-top-color: #e08a5c; }
+.kanban-col--seguimiento { border-top-color: #6c9bb8; }
+.kanban-col--cotizada { border-top-color: #9a7fcb; }
+.kanban-col--negociacion { border-top-color: #d4a72c; }
+.kanban-col--cerrada { border-top-color: #5f8f72; }
+
+.kanban-col-header {
+  padding: 0.75rem 0.85rem 0.5rem;
+}
+
+.kanban-col-header h2 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.kanban-col-header p {
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
+  color: var(--color-text-soft);
+}
+
+.kanban-count {
+  padding: 0.05rem 0.5rem;
+  font-size: 0.78rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+}
+
+.kanban-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0 0.6rem 0.75rem;
+  list-style: none;
+}
+
+.kanban-card {
+  padding: 0.7rem 0.8rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.kanban-card p {
+  margin: 0.15rem 0 0;
+}
+
+.kanban-card-title {
+  font-weight: 700;
+  color: var(--color-heading);
+  text-decoration: none;
+}
+
+.kanban-card-title:hover {
+  text-decoration: underline;
+}
+
+.kanban-card-tour {
+  font-size: 0.85rem;
+}
+
+.kanban-card-meta {
+  font-size: 0.78rem;
+  color: var(--color-text-soft);
+}
+
+.kanban-advance {
+  width: 100%;
+  margin-top: 0.55rem;
+  padding: 0.4rem 0.5rem;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: var(--color-focus);
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.kanban-advance:hover {
+  background: rgba(46, 90, 63, 0.2);
+}
+
+.kanban-advance:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+}
+
+.kanban-empty {
+  padding: 1rem 0.5rem;
+  font-size: 0.82rem;
+  text-align: center;
+  color: var(--color-text-soft);
+}
+
+/* ---------- Ficha de la cotización ---------- */
+.detail {
+  display: grid;
+  gap: 1rem;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+}
+
+.facts > div {
+  padding: 0.8rem 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.85rem;
+}
+
+.facts dt {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-soft);
+}
+
+.facts dd {
+  margin: 0.2rem 0 0;
+  font-weight: 600;
+}
+
+.quote {
+  margin: 0;
+  padding: 0.8rem 1rem;
+  font-size: 0.92rem;
+  background: #f8faf6;
+  border-left: 3px solid var(--color-accent);
+  border-radius: 0 0.6rem 0.6rem 0;
+}
+
+.contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.contact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
+
+.inline-form {
+  margin-top: 1rem;
+}
+
+.inline-form > summary {
+  display: inline-block;
+  cursor: pointer;
+}
+
+.inline-form[open] > summary {
+  margin-bottom: 0.75rem;
+}
+
+.form--grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.form--grid .form-actions,
+.form--grid .field--mensaje {
+  grid-column: 1 / -1;
+}
+
+.note-form {
+  margin-bottom: 1.25rem;
+}
+
+.note-form textarea.form-input {
+  min-height: 4.5rem;
+}
+
+.timeline {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.timeline-item {
+  position: relative;
+  padding: 0 0 1rem 1.25rem;
+  border-left: 2px solid var(--color-border);
+}
+
+.timeline-item::before {
+  content: "";
+  position: absolute;
+  top: 0.35rem;
+  left: -6px;
+  width: 10px;
+  height: 10px;
+  background: #8fa79a;
+  border-radius: 50%;
+}
+
+.timeline-item--nota::before { background: var(--color-accent); }
+.timeline-item--pago::before { background: #2e7d4f; }
+.timeline-item--creacion::before { background: var(--color-primary); }
+
+.timeline-item p {
+  margin: 0;
+}
+
+.timeline-meta {
+  font-size: 0.8rem;
+  color: var(--color-text-soft);
+}
+
+.timeline-meta strong {
+  color: var(--color-text);
+}
+
+.timeline-item .timeline-text {
+  margin-top: 0.15rem;
+  font-size: 0.92rem;
+}
+
+.side-value {
+  margin: 0 0 0.75rem;
+  font-weight: 700;
+}
+
+.side-form {
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+}
+
+.side-form .form-input {
+  padding: 0.6rem 0.8rem;
+  font-size: 0.92rem;
+}
+
+.side-form textarea.form-input {
+  min-height: 4rem;
+}
+
+/* Etapas del embudo numeradas; la actual resaltada. */
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0 0 0.85rem;
+  padding: 0;
+  list-style: none;
+  counter-reset: paso;
+}
+
+.steps li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  color: var(--color-text-soft);
+  counter-increment: paso;
+}
+
+.steps li::before {
+  content: counter(paso);
+  display: inline-grid;
+  place-items: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: #edf2ee;
+  border-radius: 50%;
+}
+
+.steps li[aria-current="step"] {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.steps li[aria-current="step"]::before {
+  color: #fff;
+  background: var(--color-primary);
+}
+
+/* ---------- Tableta (≥ 640px) ---------- */
+@media (min-width: 640px) {
+  .topbar,
+  .container {
+    padding-inline: 2rem;
+  }
+
+  .card {
+    padding: 2rem;
+    border-radius: 1.75rem;
+  }
+}
+
+/* ---------- Escritorio (≥ 960px): menú lateral fijo a la izquierda ---------- */
+@media (min-width: 960px) {
+  .crm-layout {
+    display: grid;
+    grid-template-columns: 230px minmax(0, 1fr);
+    align-items: start;
+    gap: 1.5rem;
+    padding-inline: 2rem;
+  }
+
+  .crm-nav {
+    position: sticky;
+    top: 1rem;
+    padding: 0.75rem;
+    border-radius: 1.25rem;
+  }
+
+  .crm-nav-list {
+    flex-direction: column;
+    overflow: visible;
+  }
+
+  .crm-nav-group {
+    display: block;
+    margin: 0.9rem 0 0.2rem;
+    padding: 0 0.8rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-soft);
+  }
+
+  .crm-nav-foot {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--color-border);
+  }
+}
+
+/* ---------- Pantallas grandes (≥ 1180px): ficha con columna de acciones ---------- */
+@media (min-width: 1180px) {
+  .detail {
+    grid-template-columns: minmax(0, 1fr) 300px;
+    align-items: start;
+  }
+
+  .detail-side {
+    position: sticky;
+    top: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .form-input,
+  .btn,
+  .crm-nav-link {
+    transition: none;
+  }
+}

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% comment %}
+  Layout del panel interno: menú lateral (en móvil, una fila desplazable) y contenido.
+  Cada vista marca su sección con el atributo `seccion` de StaffRequiredMixin.
+  Las secciones "Pronto" se irán activando en las siguientes fases del plan del CRM.
+{% endcomment %}
+
+{% block body %}
+  <div class="crm-layout">
+    <nav class="crm-nav" aria-label="Menú del panel">
+      <ul class="crm-nav-list">
+        <li>
+          <a class="crm-nav-link" href="{% url 'crm_inicio' %}"{% if seccion == "inicio" %} aria-current="page"{% endif %}>Inicio</a>
+        </li>
+        <li>
+          <a class="crm-nav-link" href="{% url 'lead_list' %}"{% if seccion == "cotizaciones" %} aria-current="page"{% endif %}>
+            Cotizaciones
+            {% if cotizaciones_nuevas %}<span class="badge badge--alert" title="Cotizaciones nuevas">{{ cotizaciones_nuevas }}<span class="visually-hidden"> nuevas</span></span>{% endif %}
+          </a>
+        </li>
+
+        <li class="crm-nav-group" aria-hidden="true">Catálogo</li>
+        <li>
+          <a class="crm-nav-link" href="{% url 'tour_list' %}"{% if seccion == "tours" %} aria-current="page"{% endif %}>Tours</a>
+        </li>
+        <li>
+          <span class="crm-nav-link crm-nav-link--soon" aria-disabled="true">Destinos <span class="badge">Pronto</span></span>
+        </li>
+        <li>
+          <span class="crm-nav-link crm-nav-link--soon" aria-disabled="true">Categorías <span class="badge">Pronto</span></span>
+        </li>
+
+        <li class="crm-nav-group" aria-hidden="true">Administración</li>
+        <li>
+          <span class="crm-nav-link crm-nav-link--soon" aria-disabled="true">Equipo <span class="badge">Pronto</span></span>
+        </li>
+        {% if user.is_superuser %}
+          <li><a class="crm-nav-link" href="{% url 'admin:index' %}">Admin de Django</a></li>
+        {% endif %}
+        <li class="crm-nav-foot">
+          <a class="crm-nav-link" href="{{ frontend_url }}" target="_blank" rel="noopener">Ver sitio público <span aria-hidden="true">↗</span></a>
+        </li>
+      </ul>
+    </nav>
+
+    <main class="crm-main">
+      {% include "partials/messages.html" %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+{% endblock %}

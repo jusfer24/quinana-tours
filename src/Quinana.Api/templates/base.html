@@ -4,16 +4,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
   <title>{% block title %}Quinana Tours{% endblock %}</title>
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
 </head>
 <body class="{% block body_class %}{% endblock %}">
   {% block header %}
     <header class="topbar">
-      <a class="brand" href="{% url 'tour_list' %}">Quinana Tours</a>
+      <a class="brand" href="{% url 'crm_inicio' %}">Quinana Tours <span class="brand-tag">CRM</span></a>
       {% if user.is_authenticated %}
         <div class="topbar-user">
-          <span>Hola, <strong>{{ user.get_username }}</strong></span>
+          <span>Hola, <strong>{{ user.first_name|default:user.get_username }}</strong></span>
           <form action="{% url 'logout' %}" method="post">
             {% csrf_token %}
             <button type="submit" class="btn btn-ghost">Cerrar sesión</button>
@@ -23,16 +24,11 @@
     </header>
   {% endblock %}
 
-  <main class="{% block main_class %}container{% endblock %}">
-    {% if messages %}
-      <ul class="messages">
-        {% for message in messages %}
-          <li class="alert alert--{{ message.tags }}">{{ message }}</li>
-        {% endfor %}
-      </ul>
-    {% endif %}
-
-    {% block content %}{% endblock %}
-  </main>
+  {% block body %}
+    <main class="{% block main_class %}container{% endblock %}">
+      {% include "partials/messages.html" %}
+      {% block content %}{% endblock %}
+    </main>
+  {% endblock %}
 </body>
 </html>
