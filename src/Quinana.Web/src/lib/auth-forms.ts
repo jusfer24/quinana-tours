@@ -68,6 +68,8 @@ const AFTER_LOGIN_URL = `${API_URL}/tours/`;
 type Handler = {
 	send: (data: FormData) => Promise<unknown>;
 	done: (form: HTMLFormElement, data: FormData) => void;
+	/** Si sale bien, la página cambia: el botón sigue "cargando" hasta que se vaya. */
+	redirects?: boolean;
 };
 const HANDLERS: Record<string, Handler> = {
 	"login-form": {
@@ -82,6 +84,20 @@ const HANDLERS: Record<string, Handler> = {
 			if (status) status.textContent = "¡Listo! Redirigiendo…";
 			location.assign(AFTER_LOGIN_URL);
 		},
+		redirects: true,
+	},
+	"staff-form": {
+		send: (data) =>
+			post("/api/auth/staff-login/", {
+				username: data.get("username"),
+				password: data.get("password"),
+			}),
+		done: (form) => {
+			const status = form.querySelector<HTMLElement>(".auth-status");
+			if (status) status.textContent = "¡Listo! Abriendo el panel…";
+			location.assign(AFTER_LOGIN_URL);
+		},
+		redirects: true,
 	},
 	"register-form": {
 		send: (data) =>
@@ -120,12 +136,36 @@ function showFieldErrors(form: HTMLFormElement, fields: Record<string, string[]>
 	form.querySelector<Field>('[aria-invalid="true"]')?.focus();
 }
 
+/** Estado de espera del botón de envío: spinner (ver .auth-submit[aria-busy] en auth.css) y texto opcional. */
+function setBusy(button: HTMLButtonElement | null, busy: boolean): void {
+	if (!button) return;
+	button.disabled = busy;
+	button.setAttribute("aria-busy", String(busy));
+	const busyLabel = button.dataset.busyLabel;
+	if (!busyLabel) return;
+	if (busy) {
+		button.dataset.label = button.textContent ?? "";
+		button.textContent = busyLabel;
+	} else if (button.dataset.label) {
+		button.textContent = button.dataset.label;
+	}
+}
+
 function initForm(form: HTMLFormElement): void {
 	const fields = fieldsIn(form);
 	const status = form.querySelector<HTMLElement>(".auth-status");
 	const submitButton = form.querySelector<HTMLButtonElement>('[type="submit"]');
 	const handler = HANDLERS[form.id];
 	watchFields(fields);
+
+	// Al volver con "Atrás" el navegador restaura la página tal como quedó al irse
+	// (botón cargando, "¡Listo! Redirigiendo…"): se deja el formulario listo otra vez.
+	window.addEventListener("pageshow", (event) => {
+		if (!event.persisted) return;
+		setBusy(submitButton, false);
+		if (status) status.textContent = "";
+		for (const input of form.querySelectorAll<Field>('input[type="password"]')) input.value = "";
+	});
 
 	form.addEventListener("submit", async (event) => {
 		event.preventDefault();
@@ -136,10 +176,12 @@ function initForm(form: HTMLFormElement): void {
 		}
 
 		if (status) status.textContent = "";
-		if (submitButton) submitButton.disabled = true;
+		setBusy(submitButton, true);
 		const data = new FormData(form);
+		let leaving = false;
 		try {
 			await handler.send(data);
+			leaving = Boolean(handler.redirects);
 			handler.done(form, data);
 		} catch (error) {
 			if (error instanceof ApiError) {
@@ -149,7 +191,7 @@ function initForm(form: HTMLFormElement): void {
 				status.textContent = "Algo salió mal. Inténtalo de nuevo.";
 			}
 		} finally {
-			if (submitButton) submitButton.disabled = false;
+			if (!leaving) setBusy(submitButton, false);
 		}
 	});
 }
@@ -192,7 +234,7 @@ function initTermsDialog(): void {
 }
 
 export function initAuthForms(): void {
-	for (const id of ["login-form", "register-form", "recover-form"]) {
+	for (const id of ["login-form", "staff-form", "register-form", "recover-form"]) {
 		const form = document.getElementById(id);
 		if (form instanceof HTMLFormElement) initForm(form);
 	}

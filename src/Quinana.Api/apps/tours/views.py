@@ -1,7 +1,7 @@
 """Controladores (C del patrón MVC) del CRUD de tours.
 
-Sin sesión, todas las vistas redirigen a LOGIN_URL (/login/) y, tras autenticarse,
-devuelven al usuario a la página que intentaba abrir (?next=).
+Sin sesión, todas las vistas redirigen a LOGIN_URL: el "Acceso del equipo" del sitio
+público (/login#equipo), que tras iniciar sesión lleva al CRUD.
 
 - Listar: cualquier usuario con sesión (también los viajeros del sitio público).
   La plantilla solo muestra "Nuevo tour", "Editar" y "Eliminar" a quien tiene permiso.

@@ -77,3 +77,29 @@ class AuthApiTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "Nuevo tour")
         self.assertEqual(self.client.get("/tours/nuevo/").status_code, 403)
+
+
+class StaffLoginApiTestCase(TestCase):
+    """Acceso del equipo del CRM (/api/auth/staff-login/): usuario de Django y solo is_staff."""
+
+    def setUp(self):
+        User = get_user_model()
+        User.objects.create_user(username="operador", password=PASSWORD, is_staff=True)
+        User.objects.create_user(username="ana@test.com", email="ana@test.com", password=PASSWORD)
+
+    def post(self, data):
+        return self.client.post("/api/auth/staff-login/", data, content_type="application/json")
+
+    def test_personal_inicia_sesion_con_usuario(self):
+        response = self.post({"username": "operador", "password": PASSWORD})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.client.get("/tours/").status_code, 200)
+
+    def test_viajero_no_entra_por_el_acceso_del_equipo(self):
+        response = self.post({"username": "ana@test.com", "password": PASSWORD})
+        self.assertEqual(response.status_code, 400)
+        self.assertIsNone(self.client.get("/api/auth/me/").json()["user"])
+
+    def test_contrasena_incorrecta(self):
+        response = self.post({"username": "operador", "password": "otra-clave-1"})
+        self.assertEqual(response.status_code, 400)

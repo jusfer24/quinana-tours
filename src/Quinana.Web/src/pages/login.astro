@@ -3,6 +3,7 @@ import { Image } from "astro:assets";
 import LoginForm from "../components/LoginForm.astro";
 import RecoverForm from "../components/RecoverForm.astro";
 import RegisterForm from "../components/RegisterForm.astro";
+import StaffLoginForm from "../components/StaffLoginForm.astro";
 import TermsDialog from "../components/TermsDialog.astro";
 import "../styles/auth.css";
 // Foto: Omri D. Cohen en Unsplash (https://unsplash.com/photos/MzeSloMrFTY).
@@ -78,6 +79,10 @@ import quilotoa from "../assets/quilotoa.jpg";
 						<div role="tabpanel" id="panel-login" aria-labelledby="tab-login">
 							<h2 class="panel-title">Bienvenido de nuevo</h2>
 							<LoginForm />
+							<p class="staff-entry">
+								¿Eres del equipo Quinana?
+								<button type="button" class="auth-link" data-go="staff">Ingresar al panel (CRM)</button>
+							</p>
 						</div>
 						<div role="tabpanel" id="panel-register" aria-labelledby="tab-register" hidden>
 							<h2 class="panel-title">Comienza tu aventura</h2>
@@ -89,6 +94,13 @@ import quilotoa from "../assets/quilotoa.jpg";
 								Escribe el correo de tu cuenta y te enviaremos un enlace para crear una nueva contraseña.
 							</p>
 							<RecoverForm />
+						</div>
+						<div id="panel-staff" aria-labelledby="staff-title" hidden>
+							<h2 class="panel-title" id="staff-title">Acceso del equipo</h2>
+							<p class="panel-text">
+								Para quienes gestionan el catálogo y las cotizaciones. Ingresa con tu usuario del panel.
+							</p>
+							<StaffLoginForm />
 						</div>
 					</section>
 				</div>
@@ -123,13 +135,14 @@ import quilotoa from "../assets/quilotoa.jpg";
 <script>
 	import { initAuthForms } from "../lib/auth-forms";
 
-	type View = "welcome" | "login" | "register" | "recover";
+	type View = "welcome" | "login" | "register" | "recover" | "staff";
 	type Panel = Exclude<View, "welcome">;
 	const HASHES: Record<View, string> = {
 		welcome: "",
 		login: "#iniciar-sesion",
 		register: "#registro",
 		recover: "#recuperar",
+		staff: "#equipo",
 	};
 
 	const page = document.querySelector<HTMLElement>(".access-page")!;
@@ -144,6 +157,7 @@ import quilotoa from "../assets/quilotoa.jpg";
 		login: document.getElementById("panel-login")!,
 		register: document.getElementById("panel-register")!,
 		recover: document.getElementById("panel-recover")!,
+		staff: document.getElementById("panel-staff")!,
 	};
 
 	function viewFromHash(): View {
@@ -160,7 +174,7 @@ import quilotoa from "../assets/quilotoa.jpg";
 			if (focus) welcome.querySelector<HTMLElement>("button")?.focus();
 			return;
 		}
-		tablist.hidden = view === "recover"; // las pestañas no aplican al recuperar
+		tablist.hidden = view === "recover" || view === "staff"; // las pestañas son solo de viajeros
 		for (const key of ["login", "register"] as const) {
 			const active = key === view;
 			tabs[key].setAttribute("aria-selected", String(active));
@@ -410,6 +424,15 @@ import quilotoa from "../assets/quilotoa.jpg";
 		line-height: 1.2;
 		letter-spacing: -0.01em;
 		color: var(--color-text);
+	}
+
+	.staff-entry {
+		margin: 1.25rem 0 0;
+		padding-top: 1rem;
+		font-size: 0.88rem;
+		text-align: center;
+		color: var(--color-text-soft);
+		border-top: 1px solid var(--color-border);
 	}
 
 	.panel-text {

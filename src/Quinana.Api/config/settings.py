@@ -25,11 +25,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Permite que Django reconozca las carpetas dentro de 'apps/' directamente por su nombre
 sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
 
-# Autenticación: adónde se envía al usuario sin sesión, tras iniciarla y tras cerrarla.
-LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'tour_list'
-LOGOUT_REDIRECT_URL = 'login'
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
@@ -60,8 +55,12 @@ FRONTEND_ORIGINS = [
     ).split(',')
     if origin.strip()
 ]
-# Página principal del sitio público: destino del botón "Volver al sitio" del panel.
-FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:4322/')
+# Página principal del sitio público (Astro).
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:4321/')
+
+# Autenticación: Django no tiene página de login propia. Sin sesión, el CRM envía al
+# "Acceso del equipo" del sitio público, y al cerrar sesión se vuelve ahí mismo.
+LOGIN_URL = LOGOUT_REDIRECT_URL = f"{FRONTEND_URL.rstrip('/')}/login#equipo"
 CORS_ALLOWED_ORIGINS = FRONTEND_ORIGINS
 CORS_ALLOW_CREDENTIALS = True
 CORS_URLS_REGEX = r'^/api/.*$'
@@ -121,7 +120,7 @@ TEMPLATES = [
         # Agregamos la ruta hacia tours/Vistas:
         'DIRS': [
             BASE_DIR / 'apps' / 'tours' / 'Vistas',
-            BASE_DIR / 'templates',  # Para la plantilla de login/logout
+            BASE_DIR / 'templates',  # Plantilla base del panel (base.html)
         ],
         'APP_DIRS': True,
         'OPTIONS': {

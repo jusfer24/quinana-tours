@@ -17,7 +17,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .serializers import LoginSerializer, RegisterSerializer
+from .serializers import LoginSerializer, RegisterSerializer, StaffLoginSerializer
 
 User = get_user_model()
 
@@ -58,6 +58,30 @@ class LoginView(APIView):
         login(request, user)
         if not data["remember"]:
             request.session.set_expiry(0)  # la sesión termina al cerrar el navegador
+        return Response(user_data(user))
+
+
+@method_decorator(csrf_protect, name="dispatch")
+class StaffLoginView(APIView):
+    """Acceso del equipo que maneja el CRM: usuario de Django y solo cuentas de personal (is_staff)."""
+
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = StaffLoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        user = authenticate(request, username=data["username"], password=data["password"])
+        if not user or not user.is_staff:
+            # Un viajero con contraseña correcta recibe el mismo mensaje: no revela qué cuentas hay.
+            return Response(
+                {"detail": "Usuario o contraseña incorrectos, o la cuenta no es del equipo."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        login(request, user)
+        request.session.set_expiry(0)  # por seguridad, la sesión del equipo termina al cerrar el navegador
         return Response(user_data(user))
 
 

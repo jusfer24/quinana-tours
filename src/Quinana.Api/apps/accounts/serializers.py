@@ -14,6 +14,11 @@ class LoginSerializer(serializers.Serializer):
     remember = serializers.BooleanField(default=False)
 
 
+class StaffLoginSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=150)
+    password = serializers.CharField(trim_whitespace=False)
+
+
 class RegisterSerializer(serializers.Serializer):
     full_name = serializers.CharField(max_length=150)
     email = serializers.EmailField(max_length=150)
