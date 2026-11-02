@@ -168,7 +168,31 @@
 
 .auth-submit:active,
 .auth-secondary:active {
-	transform: translateY(1px);
+	transform: translateY(1px) scale(0.98);
+}
+
+/* Enviando: el botón se atenúa y muestra un spinner hasta que responde la API. */
+.auth-submit[aria-busy="true"] {
+	gap: 0.6rem;
+	cursor: progress;
+	opacity: 0.85;
+}
+
+.auth-submit[aria-busy="true"]::before {
+	content: "";
+	width: 1em;
+	height: 1em;
+	flex-shrink: 0;
+	border: 2px solid currentColor;
+	border-right-color: transparent;
+	border-radius: 50%;
+	animation: auth-spin 0.7s linear infinite;
+}
+
+@keyframes auth-spin {
+	to {
+		transform: rotate(360deg);
+	}
 }
 
 .auth-submit:focus-visible,
@@ -226,5 +250,10 @@
 	.auth-submit,
 	.auth-secondary {
 		transition: none;
+	}
+
+	/* Sin giro: el spinner queda fijo y el texto "Ingresando…" indica la espera. */
+	.auth-submit[aria-busy="true"]::before {
+		animation: none;
 	}
 }

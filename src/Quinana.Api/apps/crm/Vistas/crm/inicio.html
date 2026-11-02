@@ -1,0 +1,35 @@
+{% extends "crm/base_crm.html" %}
+
+{% block title %}Inicio · CRM Quinana Tours{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h1>Hola, {{ user.first_name|default:user.get_username }}</h1>
+        <p class="muted muted--tight">Este es el resumen del panel de Quinana Tours.</p>
+      </div>
+      {% if perms.tours.add_tour %}<a href="{% url 'tour_create' %}" class="btn btn-primary">+ Nuevo tour</a>{% endif %}
+    </div>
+
+    <ul class="stats">
+      <li class="stat">
+        <span class="stat-label">Cotizaciones abiertas</span>
+        <span class="stat-value">{{ resumen.abiertas }}</span>
+      </li>
+      <li class="stat{% if resumen.sin_responsable %} stat--alert{% endif %}">
+        <span class="stat-label">Sin responsable</span>
+        <span class="stat-value">{{ resumen.sin_responsable }}</span>
+      </li>
+      <li class="stat">
+        <span class="stat-label">Asignadas a mí</span>
+        <span class="stat-value">{{ resumen.mias }}</span>
+      </li>
+      <li class="stat">
+        <span class="stat-label">Tours en el catálogo</span>
+        <span class="stat-value">{{ resumen.tours }}</span>
+        <a class="link stat-link" href="{% url 'tour_list' %}">Ver catálogo</a>
+      </li>
+    </ul>
+  </div>
+{% endblock %}
