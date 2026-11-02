@@ -2,6 +2,8 @@
 // "Mostrar contraseña" y el cuadro de términos y privacidad.
 // Cada campo muestra su error en el elemento con id `${input.id}-error`.
 
+import { API_URL, ApiError, post } from "./api";
+
 type Field = HTMLInputElement;
 
 const NOT_AVAILABLE = "Esta función aún no está disponible. Inténtalo más tarde.";
@@ -57,16 +59,140 @@ function watchFields(fields: Field[]): void {
 	}
 }
 
+// Adónde va el usuario tras iniciar sesión: el catálogo del panel de Django.
+// Provisional hasta que se definan los roles.
+const AFTER_LOGIN_URL = `${API_URL}/tours/`;
+
+// Envío de cada formulario a la API de Django y qué hacer si sale bien.
+// Sin entrada = la función aún no existe.
+type Handler = {
+	send: (data: FormData) => Promise<unknown>;
+	done: (form: HTMLFormElement, data: FormData) => void;
+	/** Si sale bien, la página cambia: el botón sigue "cargando" hasta que se vaya. */
+	redirects?: boolean;
+};
+const HANDLERS: Record<string, Handler> = {
+	"login-form": {
+		send: (data) =>
+			post("/api/auth/login/", {
+				email: data.get("email"),
+				password: data.get("password"),
+				remember: data.has("remember"),
+			}),
+		done: (form) => {
+			const status = form.querySelector<HTMLElement>(".auth-status");
+			if (status) status.textContent = "¡Listo! Redirigiendo…";
+			location.assign(AFTER_LOGIN_URL);
+		},
+		redirects: true,
+	},
+	"staff-form": {
+		send: (data) =>
+			post("/api/auth/staff-login/", {
+				username: data.get("username"),
+				password: data.get("password"),
+			}),
+		done: (form) => {
+			const status = form.querySelector<HTMLElement>(".auth-status");
+			if (status) status.textContent = "¡Listo! Abriendo el panel…";
+			location.assign(AFTER_LOGIN_URL);
+		},
+		redirects: true,
+	},
+	"register-form": {
+		send: (data) =>
+			post("/api/auth/register/", {
+				full_name: data.get("full_name"),
+				email: data.get("email"),
+				password: data.get("password"),
+			}),
+		done: (form, data) => showLoginAfterRegister(form, String(data.get("email"))),
+	},
+};
+
+/** Tras crear la cuenta, vuelve a "Iniciar sesión" con el correo ya escrito y un aviso. */
+function showLoginAfterRegister(registerForm: HTMLFormElement, email: string): void {
+	registerForm.reset();
+	// La página cambia de vista con los elementos [data-go] (ver login.astro).
+	document.getElementById("tab-login")?.click();
+
+	const loginForm = document.getElementById("login-form");
+	const emailInput = loginForm?.querySelector<Field>('[name="email"]');
+	const status = loginForm?.querySelector<HTMLElement>(".auth-status");
+	if (emailInput) emailInput.value = email;
+	if (status) status.textContent = "¡Cuenta creada! Ingresa tu contraseña para iniciar sesión.";
+	loginForm?.querySelector<Field>('[name="password"]')?.focus();
+}
+
+/** Muestra los errores por campo que devolvió la API bajo cada input (por su atributo name). */
+function showFieldErrors(form: HTMLFormElement, fields: Record<string, string[]>): void {
+	for (const [name, messages] of Object.entries(fields)) {
+		const input = form.querySelector<Field>(`[name="${name}"]`);
+		const error = input && document.getElementById(`${input.id}-error`);
+		if (!input || !error) continue;
+		error.textContent = messages.join(" ");
+		input.setAttribute("aria-invalid", "true");
+	}
+	form.querySelector<Field>('[aria-invalid="true"]')?.focus();
+}
+
+/** Estado de espera del botón de envío: spinner (ver .auth-submit[aria-busy] en auth.css) y texto opcional. */
+function setBusy(button: HTMLButtonElement | null, busy: boolean): void {
+	if (!button) return;
+	button.disabled = busy;
+	button.setAttribute("aria-busy", String(busy));
+	const busyLabel = button.dataset.busyLabel;
+	if (!busyLabel) return;
+	if (busy) {
+		button.dataset.label = button.textContent ?? "";
+		button.textContent = busyLabel;
+	} else if (button.dataset.label) {
+		button.textContent = button.dataset.label;
+	}
+}
+
 function initForm(form: HTMLFormElement): void {
 	const fields = fieldsIn(form);
 	const status = form.querySelector<HTMLElement>(".auth-status");
+	const submitButton = form.querySelector<HTMLButtonElement>('[type="submit"]');
+	const handler = HANDLERS[form.id];
 	watchFields(fields);
 
-	form.addEventListener("submit", (event) => {
+	// Al volver con "Atrás" el navegador restaura la página tal como quedó al irse
+	// (botón cargando, "¡Listo! Redirigiendo…"): se deja el formulario listo otra vez.
+	window.addEventListener("pageshow", (event) => {
+		if (!event.persisted) return;
+		setBusy(submitButton, false);
+		if (status) status.textContent = "";
+		for (const input of form.querySelectorAll<Field>('input[type="password"]')) input.value = "";
+	});
+
+	form.addEventListener("submit", async (event) => {
 		event.preventDefault();
 		if (!validateAll(fields)) return;
-		// TODO: enviar a la API de autenticación de Django cuando exista.
-		if (status) status.textContent = NOT_AVAILABLE;
+		if (!handler) {
+			if (status) status.textContent = NOT_AVAILABLE;
+			return;
+		}
+
+		if (status) status.textContent = "";
+		setBusy(submitButton, true);
+		const data = new FormData(form);
+		let leaving = false;
+		try {
+			await handler.send(data);
+			leaving = Boolean(handler.redirects);
+			handler.done(form, data);
+		} catch (error) {
+			if (error instanceof ApiError) {
+				showFieldErrors(form, error.fields);
+				if (status && Object.keys(error.fields).length === 0) status.textContent = error.message;
+			} else if (status) {
+				status.textContent = "Algo salió mal. Inténtalo de nuevo.";
+			}
+		} finally {
+			if (!leaving) setBusy(submitButton, false);
+		}
 	});
 }
 
@@ -108,7 +234,7 @@ function initTermsDialog(): void {
 }
 
 export function initAuthForms(): void {
-	for (const id of ["login-form", "register-form", "recover-form"]) {
+	for (const id of ["login-form", "staff-form", "register-form", "recover-form"]) {
 		const form = document.getElementById(id);
 		if (form instanceof HTMLFormElement) initForm(form);
 	}
