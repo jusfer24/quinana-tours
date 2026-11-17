@@ -1,8 +1,11 @@
 """Controladores (C del patrón MVC) del CRUD de tours.
 
-Todas las vistas heredan de PermissionRequiredMixin: sin sesión, Django redirige a
-LOGIN_URL (/login/) y, tras autenticarse, devuelve al usuario a la página que intentaba
-abrir (?next=). Con sesión pero sin el permiso del modelo, responde 403.
+Forman parte del panel interno (/crm/catalogo/tours/). Sin sesión, todas las vistas
+redirigen a LOGIN_URL: el "Acceso del equipo" del sitio público (/login#equipo).
+
+- Listar: solo el personal (StaffRequiredMixin, is_staff); un viajero recibe 403.
+  La plantilla solo muestra "Nuevo tour", "Editar" y "Eliminar" a quien tiene permiso.
+- Crear, editar y eliminar: además, PermissionRequiredMixin; sin el permiso del modelo, 403.
 """
 
 from django.contrib import messages
@@ -11,13 +14,15 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
+from crm.mixins import StaffRequiredMixin
+
 from .forms import TourForm
 from .models import Tour
 
 
 # R - Read (Listar tours)
-class TourListView(PermissionRequiredMixin, ListView):
-    permission_required = "tours.view_tour"
+class TourListView(StaffRequiredMixin, ListView):
+    seccion = "tours"
     model = Tour
     template_name = "tour_list.html"
     context_object_name = "tours"
@@ -28,7 +33,8 @@ class TourListView(PermissionRequiredMixin, ListView):
 
 
 # C - Create (Crear tour)
-class TourCreateView(PermissionRequiredMixin, SuccessMessageMixin, CreateView):
+class TourCreateView(StaffRequiredMixin, PermissionRequiredMixin, SuccessMessageMixin, CreateView):
+    seccion = "tours"
     permission_required = "tours.add_tour"
     model = Tour
     form_class = TourForm
@@ -43,7 +49,8 @@ class TourCreateView(PermissionRequiredMixin, SuccessMessageMixin, CreateView):
 
 
 # U - Update (Actualizar tour)
-class TourUpdateView(PermissionRequiredMixin, SuccessMessageMixin, UpdateView):
+class TourUpdateView(StaffRequiredMixin, PermissionRequiredMixin, SuccessMessageMixin, UpdateView):
+    seccion = "tours"
     permission_required = "tours.change_tour"
     model = Tour
     form_class = TourForm
@@ -58,7 +65,8 @@ class TourUpdateView(PermissionRequiredMixin, SuccessMessageMixin, UpdateView):
 
 
 # D - Delete (Eliminar tour)
-class TourDeleteView(PermissionRequiredMixin, DeleteView):
+class TourDeleteView(StaffRequiredMixin, PermissionRequiredMixin, DeleteView):
+    seccion = "tours"
     permission_required = "tours.delete_tour"
     model = Tour
     template_name = "tour_confirm_delete.html"

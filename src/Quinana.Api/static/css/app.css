@@ -1,0 +1,2073 @@
+/* Estilos del panel interno (CRM).
+   Paleta "Selva y tierra" del sitio público: verde bosque, terracota y crema.
+   Fondo claro con tarjetas blancas, barra lateral verde y títulos con serif.
+   Para cambiar los colores basta con editar :root. */
+
+:root {
+  --color-page: #f4f1e9; /* fondo crema del panel */
+  --color-sidebar: #15402f; /* barra lateral: verde bosque */
+  --color-sidebar-deep: #0c2a1f;
+  --color-heading: #1b3a2a; /* títulos */
+  --color-surface: #ffffff;
+  --color-surface-soft: #faf8f3; /* fondos suaves dentro de tarjetas */
+  --color-primary: #1f3d2b;
+  --color-primary-hover: #2e5a3f;
+  --color-on-primary: #ffffff;
+  --color-accent: #c2562e; /* terracota: llamados a la acción y avisos */
+  --color-accent-hover: #a4461f;
+  --color-accent-soft: #f7e6dc;
+  --color-text: #1b2420;
+  --color-text-soft: #66716b;
+  --color-border: #e5dfd3;
+  --color-focus: rgba(46, 90, 63, 0.1);
+  --color-focus-ring: rgba(46, 90, 63, 0.35);
+  --color-error: #b42318;
+  --color-error-soft: #fdecea;
+  --color-success-soft: #e7f3ec;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; /* única fuente del panel */
+  --shadow-card: 0 1px 2px rgba(27, 36, 32, 0.04), 0 12px 32px rgba(27, 58, 42, 0.07);
+  --radius: 0.6rem;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  font-family: var(--font);
+  line-height: 1.5;
+  color: var(--color-text);
+  background:
+    radial-gradient(ellipse 70% 45% at 85% 0%, #fbf9f4, transparent 70%),
+    var(--color-page);
+}
+
+h1 {
+  margin: 0 0 1rem;
+  font-size: 1.75rem;
+  font-weight: 750;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--color-heading);
+}
+
+.icon {
+  flex: none;
+}
+
+.muted {
+  margin: 0 0 1.25rem;
+  color: var(--color-text-soft);
+}
+
+/* ---------- Barra superior (páginas sin menú, p. ej. 403) ---------- */
+.topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 1.25rem 1rem;
+}
+
+.brand {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-heading);
+  text-decoration: none;
+}
+
+.brand:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+.topbar-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--color-text-soft);
+}
+
+.topbar-user form {
+  margin: 0;
+}
+
+/* ---------- Contenido ---------- */
+.container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 1rem 2.5rem;
+}
+
+.card {
+  padding: 1.5rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 1.25rem;
+  box-shadow: var(--shadow-card);
+}
+
+.card--narrow {
+  max-width: 640px;
+  margin-inline: auto;
+}
+
+.card--center {
+  text-align: center;
+}
+
+.card-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.card-header h1 {
+  margin: 0;
+}
+
+/* ---------- Mensajes ---------- */
+.messages {
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.messages .alert + .alert {
+  margin-top: 0.5rem;
+}
+
+.alert {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  color: var(--color-primary);
+  background: var(--color-success-soft);
+  border: 1px solid #c3dfcd;
+  border-radius: var(--radius);
+}
+
+.messages .alert {
+  margin: 0;
+}
+
+.alert--info {
+  background: #eef4f8;
+  border-color: #cfe0ea;
+  color: #234556;
+}
+
+.alert--error,
+.alert--warning {
+  color: var(--color-error);
+  background: var(--color-error-soft);
+  border-color: #f5c2bd;
+}
+
+/* ---------- Tabla del catálogo ---------- */
+.table-wrapper {
+  overflow-x: auto;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.table th,
+.table td {
+  padding: 0.85rem 1rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid #efeae0;
+}
+
+.table th {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-soft);
+  background: var(--color-surface-soft);
+  white-space: nowrap;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table tbody tr:hover {
+  background: #fbf9f5;
+}
+
+.actions {
+  white-space: nowrap;
+}
+
+.actions .link + .link {
+  margin-left: 0.9rem;
+}
+
+.empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--color-text-soft);
+}
+
+.link {
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.link--danger {
+  color: var(--color-error);
+}
+
+/* ---------- Formularios ---------- */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.field > label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  font: inherit;
+  font-size: 1rem; /* 16px evita el zoom automático en iOS */
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+textarea.form-input {
+  min-height: 7rem;
+  resize: vertical;
+}
+
+.form-input::placeholder {
+  color: #9aa8a0;
+}
+
+.form-input:hover {
+  border-color: #a9bfb0;
+}
+
+.form-input:focus-visible {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-focus);
+}
+
+.field-error {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--color-error);
+}
+
+.field:has(.field-error) .form-input {
+  border-color: var(--color-error);
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.form-actions--center {
+  justify-content: center;
+}
+
+/* ---------- Botones ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.25rem;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  border: 1.5px solid transparent;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.btn-block {
+  width: 100%;
+  padding-block: 0.85rem;
+  font-size: 1rem;
+}
+
+.btn-primary {
+  color: var(--color-on-primary);
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.btn-primary:hover {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+.btn-secondary {
+  color: var(--color-text);
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+.btn-secondary:hover {
+  background: #f6faf7;
+  border-color: var(--color-primary);
+}
+
+.btn-danger {
+  color: #fff;
+  background: var(--color-error);
+  border-color: var(--color-error);
+}
+
+.btn-danger:hover {
+  background: #912018;
+  border-color: #912018;
+}
+
+/* Botón discreto (barra superior de las páginas sin menú). */
+.btn-ghost {
+  padding: 0.5rem 0.9rem;
+  color: var(--color-heading);
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+.btn-ghost:hover {
+  border-color: var(--color-primary);
+}
+
+/* ---------- Panel (CRM): barra lateral + barra superior + contenido ---------- */
+/* Móvil: la barra lateral es una franja verde arriba con el menú desplazable. */
+.crm-sidebar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.75rem 1rem;
+  color: rgba(255, 255, 255, 0.8);
+  background: linear-gradient(180deg, var(--color-sidebar) 0%, var(--color-sidebar-deep) 100%);
+  box-shadow: 0 6px 20px rgba(12, 42, 31, 0.25);
+}
+
+.crm-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: #fff;
+  text-decoration: none;
+}
+
+.crm-logo:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.6);
+  outline-offset: 4px;
+  border-radius: 0.5rem;
+}
+
+/* Inicial que reemplaza al nombre cuando la barra lateral está contraída. */
+.crm-logo-short {
+  display: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 0.75rem;
+}
+
+.crm-logo-text {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+.crm-logo-text small {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.crm-nav-list {
+  display: flex;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  list-style: none;
+  scrollbar-width: none;
+}
+
+.crm-nav-group {
+  display: none;
+}
+
+.crm-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.8rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.78);
+  text-decoration: none;
+  white-space: nowrap;
+  border-radius: 0.7rem;
+  transition: background 0.15s, color 0.15s;
+}
+
+a.crm-nav-link:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.crm-nav-link:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.6);
+  outline-offset: 1px;
+}
+
+.crm-nav-link[aria-current="page"] {
+  color: #fff;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.17), rgba(255, 255, 255, 0.08));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+
+.crm-nav-link--soon {
+  color: rgba(255, 255, 255, 0.42);
+  cursor: default;
+}
+
+.crm-nav-link .badge {
+  margin-left: auto;
+}
+
+.badge {
+  padding: 0.1rem 0.45rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--color-text-soft);
+  background: #efebe2;
+  border-radius: 999px;
+}
+
+.crm-sidebar-card {
+  display: none;
+}
+
+.crm-main {
+  min-width: 0;
+  padding: 1rem 1rem 2.5rem;
+}
+
+/* Barra superior: buscador a la izquierda, fecha y usuario a la derecha. */
+.crm-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.crm-search {
+  position: relative;
+  flex: 1 1 240px;
+  max-width: 520px;
+  margin: 0;
+}
+
+.crm-search .icon {
+  position: absolute;
+  top: 50%;
+  left: 0.95rem;
+  color: var(--color-text-soft);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.crm-search input {
+  width: 100%;
+  padding: 0.7rem 1rem 0.7rem 2.6rem;
+  font: inherit;
+  font-size: 0.92rem;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  box-shadow: 0 1px 2px rgba(27, 36, 32, 0.04);
+}
+
+.crm-search input:focus-visible {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-focus);
+}
+
+.crm-user {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.crm-user form {
+  margin: 0;
+}
+
+.crm-date {
+  display: none;
+  margin-right: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--color-text-soft);
+}
+
+.crm-date::first-letter {
+  text-transform: uppercase;
+}
+
+.crm-avatar {
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, var(--color-primary-hover), var(--color-primary));
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(27, 58, 42, 0.2);
+}
+
+.crm-user-name {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.crm-user-name strong {
+  font-size: 0.9rem;
+}
+
+.crm-user-name small {
+  font-size: 0.75rem;
+  color: var(--color-text-soft);
+}
+
+.crm-icon-btn {
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  padding: 0;
+  color: var(--color-heading);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.crm-icon-btn:hover {
+  color: var(--color-error);
+  border-color: currentColor;
+}
+
+.crm-icon-btn:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* ---------- Encabezado de página y banner del inicio ---------- */
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.page-title {
+  margin: 0;
+  font-size: 2.1rem;
+}
+
+.btn .icon {
+  margin-right: 0.4rem;
+}
+
+.btn-accent {
+  color: #fff;
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.btn-accent:hover {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
+.btn-accent .icon {
+  margin: 0 0 0 0.45rem;
+}
+
+/* ---------- Utilidades del CRM ---------- */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.btn-sm {
+  padding: 0.5rem 0.85rem;
+  font-size: 0.875rem;
+}
+
+.btn-full {
+  width: 100%;
+}
+
+.badge--alert {
+  color: #fff;
+  background: var(--color-accent);
+}
+
+[aria-current="page"] .badge--alert {
+  color: var(--color-primary);
+  background: #fff;
+}
+
+.cell-sub {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--color-text-soft);
+}
+
+.tag-warn {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+.section-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-heading);
+}
+
+.detail-main > .card + .card,
+.detail-side > .card + .card {
+  margin-top: 1rem;
+}
+
+.card-header--tight {
+  margin-bottom: 0.75rem;
+}
+
+.card-header--tight .section-title {
+  margin: 0;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.back-link--light {
+  font-weight: 600;
+  color: var(--color-text-soft);
+  text-decoration: none;
+}
+
+.back-link--light:hover {
+  text-decoration: underline;
+}
+
+/* Etiqueta de estado del embudo, del resultado y de los pagos. */
+.estado {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+  border-radius: 999px;
+  color: #234556;
+  background: #e3eef5;
+}
+
+.estado--nueva { color: #8a3b17; background: #fde7da; }
+.estado--seguimiento { color: #234556; background: #e3eef5; }
+.estado--cotizada { color: #5b3f8c; background: #eee7f8; }
+.estado--negociacion,
+.estado--pago-pendiente { color: #7a5a00; background: #fbf0cc; }
+.estado--ganada,
+.estado--pago-aprobada { color: #1f5a37; background: #dcefe3; }
+.estado--perdida,
+.estado--pago-fallida { color: var(--color-error); background: var(--color-error-soft); }
+.estado--cancelada,
+.estado--pago-reembolsada { color: #4b5550; background: #e9ecea; }
+
+/* ---------- Cotizaciones: cabecera, filtros, paginación ---------- */
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.segmented {
+  display: inline-flex;
+  padding: 0.2rem;
+  background: #efebe2;
+  border-radius: var(--radius);
+}
+
+.segmented a {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-soft);
+  text-decoration: none;
+  border-radius: 0.45rem;
+}
+
+.segmented a[aria-current="page"] {
+  color: var(--color-text);
+  background: var(--color-surface);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: end;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: var(--color-surface-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+}
+
+.filters .field--q {
+  grid-column: 1 / -1;
+}
+
+.field--compact > label {
+  font-size: 0.78rem;
+}
+
+.field--compact .form-input {
+  padding: 0.55rem 0.7rem;
+  font-size: 0.9rem;
+}
+
+.filters-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.result-count {
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.table--leads {
+  min-width: 760px;
+}
+
+.table--leads td:first-child {
+  min-width: 13rem;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+/* ---------- Embudo (kanban): una columna por etapa, desplazable en horizontal ---------- */
+.kanban {
+  display: grid;
+  grid-auto-columns: minmax(170px, 1fr);
+  grid-auto-flow: column;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.kanban-col {
+  display: flex;
+  flex-direction: column;
+  min-height: 12rem;
+  background: var(--color-surface-soft);
+  border: 1px solid var(--color-border);
+  border-top: 4px solid #8fa79a;
+  border-radius: 1rem;
+}
+
+.kanban-col--nueva { border-top-color: #e08a5c; }
+.kanban-col--seguimiento { border-top-color: #6c9bb8; }
+.kanban-col--cotizada { border-top-color: #9a7fcb; }
+.kanban-col--negociacion { border-top-color: #d4a72c; }
+.kanban-col--cerrada { border-top-color: #5f8f72; }
+
+.kanban-col-header {
+  padding: 0.75rem 0.85rem 0.5rem;
+}
+
+.kanban-col-header h2 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.kanban-col-header p {
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
+  color: var(--color-text-soft);
+}
+
+.kanban-count {
+  padding: 0.05rem 0.5rem;
+  font-size: 0.78rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+}
+
+.kanban-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0 0.5rem 0.6rem;
+  list-style: none;
+}
+
+.kanban-card {
+  padding: 0.65rem 0.7rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.kanban-card p {
+  margin: 0.15rem 0 0;
+}
+
+.kanban-card-title {
+  font-weight: 700;
+  color: var(--color-heading);
+  text-decoration: none;
+}
+
+.kanban-card-title:hover {
+  text-decoration: underline;
+}
+
+.kanban-card-tour {
+  font-size: 0.85rem;
+}
+
+.kanban-card-meta {
+  font-size: 0.78rem;
+  color: var(--color-text-soft);
+}
+
+.kanban-advance {
+  width: 100%;
+  margin-top: 0.55rem;
+  padding: 0.4rem 0.5rem;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: var(--color-focus);
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.kanban-advance:hover {
+  background: rgba(46, 90, 63, 0.2);
+}
+
+.kanban-advance:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+}
+
+.kanban-empty {
+  padding: 1rem 0.5rem;
+  font-size: 0.82rem;
+  text-align: center;
+  color: var(--color-text-soft);
+}
+
+/* ---------- Ficha de la cotización ---------- */
+.detail {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr); /* sin esto, una tabla ancha desborda la ficha en móvil */
+  gap: 1rem;
+}
+
+.detail-main,
+.detail-side {
+  min-width: 0;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+}
+
+.facts > div {
+  padding: 0.8rem 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.85rem;
+}
+
+.facts dt {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-soft);
+}
+
+.facts dd {
+  margin: 0.2rem 0 0;
+  font-weight: 600;
+}
+
+.quote {
+  margin: 0;
+  padding: 0.8rem 1rem;
+  font-size: 0.92rem;
+  background: #f8faf6;
+  border-left: 3px solid var(--color-accent);
+  border-radius: 0 0.6rem 0.6rem 0;
+}
+
+.contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.contact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
+
+.inline-form {
+  margin-top: 1rem;
+}
+
+.inline-form > summary {
+  display: inline-block;
+  cursor: pointer;
+}
+
+.inline-form[open] > summary {
+  margin-bottom: 0.75rem;
+}
+
+.form--grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.form--grid .form-actions,
+.form--grid .field--mensaje {
+  grid-column: 1 / -1;
+}
+
+.note-form {
+  margin-bottom: 1.25rem;
+}
+
+.note-form textarea.form-input {
+  min-height: 4.5rem;
+}
+
+.timeline {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.timeline-item {
+  position: relative;
+  padding: 0 0 1rem 1.25rem;
+  border-left: 2px solid var(--color-border);
+}
+
+.timeline-item::before {
+  content: "";
+  position: absolute;
+  top: 0.35rem;
+  left: -6px;
+  width: 10px;
+  height: 10px;
+  background: #8fa79a;
+  border-radius: 50%;
+}
+
+.timeline-item--nota::before { background: var(--color-accent); }
+.timeline-item--pago::before { background: #2e7d4f; }
+.timeline-item--creacion::before { background: var(--color-primary); }
+
+.timeline-item p {
+  margin: 0;
+}
+
+.timeline-meta {
+  font-size: 0.8rem;
+  color: var(--color-text-soft);
+}
+
+.timeline-meta strong {
+  color: var(--color-text);
+}
+
+.timeline-item .timeline-text {
+  margin-top: 0.15rem;
+  font-size: 0.92rem;
+}
+
+.side-value {
+  margin: 0 0 0.75rem;
+  font-weight: 700;
+}
+
+.side-form {
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+}
+
+.side-form .form-input {
+  padding: 0.6rem 0.8rem;
+  font-size: 0.92rem;
+}
+
+.side-form textarea.form-input {
+  min-height: 4rem;
+}
+
+/* Etapas del embudo numeradas; la actual resaltada. */
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0 0 0.85rem;
+  padding: 0;
+  list-style: none;
+  counter-reset: paso;
+}
+
+.steps li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  color: var(--color-text-soft);
+  counter-increment: paso;
+}
+
+.steps li::before {
+  content: counter(paso);
+  display: inline-grid;
+  place-items: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: #efebe2;
+  border-radius: 50%;
+}
+
+.steps li[aria-current="step"] {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.steps li[aria-current="step"]::before {
+  color: #fff;
+  background: var(--color-primary);
+}
+
+/* ---------- Barra lateral: cabecera, menú móvil y botón de contraer ---------- */
+.crm-sidebar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.crm-menu-btn {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 0.7rem;
+  cursor: pointer;
+}
+
+.crm-menu-btn:focus-visible,
+.crm-collapse-btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 2px;
+}
+
+/* Móvil: el menú se despliega debajo de la franja verde al tocar el botón. */
+.crm-nav {
+  display: none;
+  padding-bottom: 0.5rem;
+}
+
+.crm-menu-abierto .crm-nav {
+  display: block;
+}
+
+.crm-nav .crm-nav-list {
+  flex-direction: column;
+  overflow: visible;
+}
+
+.crm-nav-mobile-only {
+  display: block;
+}
+
+.crm-collapse-btn {
+  display: none;
+}
+
+/* ---------- Inicio: indicadores ---------- */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+  padding: 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 1.1rem;
+  box-shadow: var(--shadow-card);
+}
+
+.kpi-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-soft);
+}
+
+.kpi-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--color-heading);
+}
+
+.kpi-sub {
+  font-size: 0.78rem;
+  color: var(--color-text-soft);
+}
+
+.delta {
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.delta--sube { color: #1b7a4a; }
+.delta--baja { color: var(--color-error); }
+.delta--neutra { font-weight: 500; color: var(--color-text-soft); }
+
+.delta-ref {
+  font-weight: 500;
+  color: var(--color-text-soft);
+}
+
+.sparkline {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-top: auto;
+  padding-top: 0.35rem;
+  overflow: visible;
+}
+
+.sparkline polyline {
+  fill: none;
+  stroke: #c9c2b4;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.sparkline circle {
+  fill: #1b8552;
+  stroke: var(--color-surface);
+  stroke-width: 2;
+}
+
+/* Medidor de la primera respuesta: la meta (24 h) es la marca del centro. */
+.meter {
+  position: relative;
+  display: block;
+  height: 8px;
+  margin: 0.4rem 0 0.2rem;
+  background: #e3ede6;
+  border-radius: 999px;
+}
+
+.meter-fill {
+  display: block;
+  height: 100%;
+  background: #1b8552;
+  border-radius: 999px;
+}
+
+.meter-fill--alerta {
+  background: #c2562e;
+}
+
+.meter-goal {
+  position: absolute;
+  top: -4px;
+  width: 2px;
+  height: 16px;
+  background: var(--color-heading);
+  border-radius: 1px;
+}
+
+.status {
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.status--ok { color: #1b7a4a; }
+.status--alerta { color: #a4461f; }
+
+/* ---------- Inicio: rejilla de tarjetas ---------- */
+.dash-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.dash-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dash-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.dash-card-head .section-title {
+  margin: 0;
+}
+
+.dash-card-sub {
+  margin: 0.2rem 0 0;
+  font-size: 0.83rem;
+  color: var(--color-text-soft);
+}
+
+.dash-card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: auto;
+  padding-top: 1rem;
+  font-size: 0.85rem;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8rem;
+  color: var(--color-text-soft);
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.legend-key {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.legend-key--dato { background: #1b8552; }
+.legend-key--contexto { background: #d9d3c6; }
+
+/* ---------- Gráfica de columnas (SVG) ---------- */
+.chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+/* En pantallas angostas la gráfica conserva un ancho legible y se desplaza de lado. */
+.chart-scroll {
+  overflow-x: auto;
+}
+
+.chart-scroll .chart {
+  min-width: 760px;
+}
+
+.chart-grid {
+  stroke: #efeae0;
+  stroke-width: 1;
+}
+
+.chart-axis {
+  stroke: #d9d3c6;
+  stroke-width: 1;
+}
+
+.chart-tick {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  fill: var(--color-text-soft);
+}
+
+.chart-label {
+  font-size: 12px;
+  font-weight: 700;
+  fill: var(--color-text);
+}
+
+.chart-bar--dato { fill: #1b8552; }
+.chart-bar--contexto { fill: #d9d3c6; }
+
+.chart-hit {
+  fill: transparent;
+}
+
+.chart-mark {
+  cursor: default;
+  outline: none;
+}
+
+.chart-mark:hover .chart-bar,
+.chart-mark:focus-visible .chart-bar {
+  opacity: 0.78;
+}
+
+.chart-mark:focus-visible .chart-hit {
+  fill: var(--color-focus);
+}
+
+.data-table {
+  margin-top: 0.75rem;
+}
+
+.data-table > summary {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  cursor: pointer;
+}
+
+.data-table[open] > summary {
+  margin-bottom: 0.5rem;
+}
+
+.table--compact {
+  font-size: 0.85rem;
+}
+
+.table--compact th,
+.table--compact td {
+  padding: 0.55rem 0.7rem;
+}
+
+.num {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+}
+
+tr.is-me td {
+  background: var(--color-surface-soft);
+}
+
+/* ---------- Barras horizontales (HTML) ---------- */
+.hbars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hbar-row {
+  display: grid;
+  grid-template-columns: minmax(6rem, 9rem) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.45rem 0.4rem;
+  color: var(--color-text);
+  text-decoration: none;
+  border-radius: 0.5rem;
+  outline: none;
+}
+
+a.hbar-row:hover,
+.hbar-row:focus-visible {
+  background: var(--color-surface-soft);
+}
+
+.hbar-row:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-focus-ring);
+}
+
+
+.hbar-label {
+  overflow: hidden;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.hbar-track {
+  display: block;
+}
+
+.hbar {
+  display: block;
+  min-width: 3px;
+  height: 12px;
+  background: #1b8552;
+  border-radius: 0 4px 4px 0;
+}
+
+.hbar-value {
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-soft);
+  white-space: nowrap;
+}
+
+.hbar-value strong {
+  color: var(--color-text);
+}
+
+/* ---------- Requieren atención ---------- */
+.alerts {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.alert-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.25rem 0.85rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid #efeae0;
+}
+
+.alert-row:last-child {
+  border-bottom: none;
+}
+
+.alert-icon {
+  display: grid;
+  grid-row: span 2;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+  border-radius: 50%;
+}
+
+.alert-row--atencion .alert-icon {
+  color: #7a5a00;
+  background: #fbf0cc;
+}
+
+.alert-reason {
+  grid-column: 2;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+/* ---------- Calendario de viajes confirmados ---------- */
+.cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.cal-nav-btn {
+  width: 2.1rem;
+  height: 2.1rem;
+  font-size: 1.2rem;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.cal-nav-btn:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.cal-month {
+  margin: 0;
+  font-weight: 700;
+  color: var(--color-heading);
+}
+
+.cal-month::first-letter {
+  text-transform: uppercase;
+}
+
+.cal {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 3px;
+  table-layout: fixed;
+  font-variant-numeric: tabular-nums;
+}
+
+.cal th {
+  padding: 0.2rem 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--color-text-soft);
+}
+
+.cal-cell {
+  position: relative;
+  height: 2.6rem;
+  padding: 0.3rem 0.35rem;
+  vertical-align: top;
+  font-size: 0.82rem;
+  color: var(--color-text);
+  background: var(--color-surface-soft);
+  border-radius: 0.5rem;
+  outline: none;
+}
+
+.cal-cell--fuera {
+  color: #b8b1a3;
+  background: transparent;
+}
+
+.cal-cell--pasado:not(.cal-cell--fuera) {
+  color: var(--color-text-soft);
+}
+
+/* Días en que algún grupo está de viaje (de la salida al último día del tour). */
+.cal-cell--ruta {
+  background: #dcebe1;
+}
+
+.cal-cell--hoy {
+  box-shadow: inset 0 0 0 2px var(--color-heading);
+}
+
+.cal-cell--hoy .cal-num {
+  font-weight: 800;
+}
+
+.cal-cell[tabindex] {
+  cursor: default;
+}
+
+.cal-cell[tabindex]:hover,
+.cal-cell[tabindex]:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--color-focus-ring);
+}
+
+/* Salidas dentro de la celda (escritorio) o, en pantallas angostas, solo un punto. */
+.cal-dot {
+  position: absolute;
+  right: 0.35rem;
+  bottom: 0.35rem;
+  width: 8px;
+  height: 8px;
+  background: #1b8552;
+  border: 2px solid var(--color-surface);
+  border-radius: 50%;
+}
+
+.cal-chip,
+.cal-more {
+  display: none;
+}
+
+.cal-legend {
+  margin: 0.6rem 0 0.25rem;
+}
+
+.legend-key--ruta {
+  background: #dcebe1;
+}
+
+.legend-key--hoy {
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--color-heading);
+}
+
+/* ---------- Tooltip de las gráficas ---------- */
+.chart-tooltip {
+  position: fixed;
+  z-index: 50;
+  min-width: 9rem;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.8rem;
+  color: #fff;
+  background: #1b2420;
+  border-radius: 0.55rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+
+.chart-tooltip p {
+  margin: 0;
+}
+
+.chart-tooltip .chart-tooltip-title {
+  margin-bottom: 0.2rem;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ---------- Tableta (≥ 640px) ---------- */
+@media (min-width: 640px) {
+  .topbar,
+  .container {
+    padding-inline: 2rem;
+  }
+
+  .card {
+    padding: 2rem;
+    border-radius: 1.75rem;
+  }
+
+  .filters {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+
+
+
+
+  .filters .field--q {
+    grid-column: auto;
+  }
+
+  .kpi {
+    padding: 1.15rem 1.25rem;
+  }
+
+  .kpi-value {
+    font-size: 2rem;
+  }
+
+  .dash-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dash-card--wide {
+    grid-column: span 2;
+  }
+
+  .dash-card--full {
+    grid-column: 1 / -1;
+  }
+
+  .cal-cell {
+    height: 5.4rem;
+  }
+
+  .cal-dot {
+    display: none;
+  }
+
+  .cal-chip {
+    display: block;
+    overflow: hidden;
+    margin-top: 0.2rem;
+    padding: 0.1rem 0.35rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    text-decoration: none;
+    background: #1b8552;
+    border-radius: 0.35rem;
+  }
+
+  .cal-chip:hover {
+    background: #146a41;
+  }
+
+  .cal-more {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--color-text-soft);
+  }
+}
+
+/* ---------- Escritorio (≥ 960px): barra lateral fija a la izquierda ---------- */
+@media (min-width: 960px) {
+  .crm-shell {
+    display: grid;
+    grid-template-columns: 250px minmax(0, 1fr);
+    min-height: 100vh;
+  }
+
+  .crm-sidebar {
+    height: 100vh;
+    gap: 1.75rem;
+    padding: 1.5rem 1rem;
+    overflow-y: auto;
+    box-shadow: none;
+  }
+
+  .crm-logo {
+    padding: 0 0.5rem;
+  }
+
+  .crm-nav-list {
+    flex-direction: column;
+    overflow: visible;
+  }
+
+  .crm-nav-link {
+    padding: 0.65rem 0.85rem;
+  }
+
+  .crm-nav-group {
+    display: block;
+    margin: 1rem 0 0.25rem;
+    padding: 0 0.85rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  /* Tarjeta al pie de la barra lateral. */
+  .crm-sidebar-card {
+    display: block;
+    margin-top: auto;
+    padding: 1.1rem;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 1rem;
+  }
+
+  .crm-sidebar-card p {
+    margin: 0 0 0.75rem;
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.65);
+  }
+
+  .crm-sidebar-card .crm-sidebar-card-title {
+    margin-bottom: 0.3rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .crm-sidebar-card-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #f0b48f;
+    text-decoration: none;
+  }
+
+  .crm-sidebar-card-link:hover {
+    color: #fff;
+  }
+
+  .crm-main {
+    padding: 1.5rem 2.25rem 3rem;
+  }
+
+  .crm-date {
+    display: inline;
+  }
+
+  .crm-shell {
+    transition: grid-template-columns 0.2s ease;
+  }
+
+  .crm-menu-btn,
+  .crm-nav-mobile-only {
+    display: none;
+  }
+
+  .crm-nav {
+    display: block;
+    padding-bottom: 0;
+  }
+
+  /* Solo ícono: el texto queda para lectores de pantalla y como tooltip (title). */
+  .crm-collapse-btn {
+    display: grid;
+    place-items: center;
+    align-self: flex-start;
+    width: 2.5rem;
+    height: 2.5rem;
+    margin: -0.75rem 0 0 0.35rem;
+    padding: 0;
+    color: rgba(255, 255, 255, 0.6);
+    background: none;
+    border: none;
+    border-radius: 0.7rem;
+    cursor: pointer;
+  }
+
+  .crm-collapse-btn:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.07);
+  }
+
+  /* Barra contraída: solo íconos; el nombre de cada sección aparece al pasar el mouse (title). */
+  .crm-contraido .crm-shell {
+    grid-template-columns: 76px minmax(0, 1fr);
+  }
+
+  .crm-contraido .crm-sidebar {
+    padding-inline: 0.75rem;
+  }
+
+  .crm-contraido .crm-logo {
+    justify-content: center;
+    padding: 0;
+  }
+
+  .crm-contraido .crm-logo-short {
+    display: grid;
+  }
+
+  .crm-contraido .crm-logo-text,
+  .crm-contraido .crm-nav-label,
+  .crm-contraido .crm-sidebar-card {
+    display: none;
+  }
+
+  .crm-contraido .crm-nav-link {
+    position: relative;
+    justify-content: center;
+    padding: 0.7rem;
+  }
+
+  .crm-contraido .crm-nav-group {
+    height: 1px;
+    margin: 0.75rem 0.5rem;
+    padding: 0;
+    background: rgba(255, 255, 255, 0.14);
+  }
+
+  .crm-contraido .crm-nav-link .badge--alert {
+    position: absolute;
+    top: 0.2rem;
+    right: 0.2rem;
+    padding: 0.05rem 0.35rem;
+    font-size: 0.6rem;
+  }
+
+  .crm-contraido .crm-collapse-btn {
+    align-self: center;
+    margin: auto 0 0;
+  }
+
+  .crm-contraido .crm-collapse-btn .icon {
+    transform: scaleX(-1);
+  }
+
+
+  .page-title {
+    font-size: 2.25rem;
+  }
+}
+
+/* ---------- Pantallas grandes (≥ 1180px): ficha con columna de acciones ---------- */
+@media (min-width: 1180px) {
+  .kpis {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .dash-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .filters {
+    grid-template-columns: 1.4fr repeat(3, 1fr);
+  }
+
+  .detail {
+    grid-template-columns: minmax(0, 1fr) 300px;
+    align-items: start;
+  }
+
+  .detail-side {
+    position: sticky;
+    top: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .form-input,
+  .btn,
+  .crm-nav-link,
+  .crm-shell {
+    transition: none;
+  }
+}

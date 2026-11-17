@@ -1,0 +1,89 @@
+---
+// Perfil de altitud de Ecuador de oeste a este: Galápagos, Costa, Andes y Amazonía.
+// Cada punto es un enlace que filtra los tours de su región (data-region, ver HomePage).
+// Escala vertical aproximada: nivel del mar en y=260, 6.000 m en y≈26 (0,039 px por metro).
+// La línea se dibuja al entrar en pantalla con la clase perfil-trazo (global.css).
+import { t, type Lang } from "../i18n/ui";
+import { regions } from "../lib/regions";
+
+interface Props {
+	lang: Lang;
+}
+
+const { lang } = Astro.props;
+const text = t(lang).profile;
+
+// Posición de cada región sobre el dibujo (coordenadas del viewBox 1200×300).
+// `side` indica dónde va la etiqueta respecto al punto.
+const stops = {
+	Galápagos: { x: 95, y: 196, side: "top" },
+	Costa: { x: 420, y: 254, side: "top" },
+	Andes: { x: 722, y: 30, side: "right" },
+	Amazonía: { x: 1020, y: 251, side: "top" },
+} as const;
+
+const meters = (m: number) => `${m.toLocaleString(lang === "es" ? "es-EC" : "en-US")} m`;
+const continent =
+	"M300 260C330 258 380 256 420 254C480 252 520 246 560 228C600 205 615 165 640 150C660 142 680 140 690 120C700 95 712 45 722 30C732 45 742 80 752 110C770 150 800 190 840 215C890 242 950 250 1020 251C1080 252 1140 252 1200 252";
+const islands = ["M40 260C60 245 75 200 95 196C115 200 125 240 150 260", "M168 260C178 250 186 240 196 240C206 241 213 252 224 260"];
+---
+
+<figure class="relative" aria-label={text.label}>
+	<div class="relative aspect-[4/1]">
+		<svg class="absolute inset-0 h-full w-full" viewBox="0 0 1200 300" aria-hidden="true">
+			<!-- Referencias de altura -->
+			<g class="text-borde" stroke="currentColor" stroke-dasharray="4 6">
+				<line x1="0" x2="1200" y1="143" y2="143"></line>
+				<line x1="0" x2="1200" y1="26" y2="26"></line>
+			</g>
+			<g class="fill-musgo text-[13px]" font-family="var(--font-sans)">
+				<text x="1196" y="138" text-anchor="end">{meters(3000)}</text>
+				<text x="1196" y="21" text-anchor="end">{meters(6000)}</text>
+			</g>
+
+			<!-- Océano Pacífico -->
+			<rect x="0" y="260" width="300" height="40" class="fill-laguna/15"></rect>
+			<text x="230" y="288" text-anchor="middle" class="fill-laguna text-[13px] italic" font-family="var(--font-sans)">{lang === "es" ? "Pacífico" : "Pacific"}</text>
+
+			<!-- Relieve: relleno suave y línea que se dibuja -->
+			<path d={`${continent}V300H300Z`} class="fill-crema"></path>
+			{islands.map((d) => <path d={`${d}Z`} class="fill-crema" />)}
+			<g class="text-selva" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+				{islands.map((d) => <path class="perfil-trazo" pathLength="1" d={d} />)}
+				<path class="perfil-trazo" pathLength="1" d={continent}></path>
+			</g>
+		</svg>
+
+		<!-- Paradas: enlaces que filtran los tours de cada región -->
+		<ul>
+			{
+				regions.map((region) => {
+					const stop = stops[region.name];
+					return (
+						<li class="absolute" style={`left: ${(stop.x / 1200) * 100}%; top: ${(stop.y / 300) * 100}%`}>
+							<a
+								href="#tours"
+								data-region={region.name}
+								class="group absolute flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full p-2"
+							>
+								<span class="h-3.5 w-3.5 rounded-full border-[3px] border-white bg-terracota ring-1 ring-terracota transition-transform group-hover:scale-125" />
+								<span
+									class:list={[
+										"absolute hidden w-max text-left sm:block",
+										stop.side === "top" ? "bottom-full left-1/2 -translate-x-1/2 pb-1 text-center" : "top-1/2 left-full -translate-y-1/2 pl-1",
+									]}
+								>
+									<span class="block font-display text-base font-bold text-selva group-hover:text-terracota md:text-lg">
+										{region.label[lang]}
+									</span>
+									<span class="block text-xs text-musgo">{text.facts[region.name]}</span>
+								</span>
+								<span class="sr-only sm:hidden">{region.label[lang]}</span>
+							</a>
+						</li>
+					);
+				})
+			}
+		</ul>
+	</div>
+</figure>

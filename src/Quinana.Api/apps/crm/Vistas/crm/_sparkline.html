@@ -1,0 +1,5 @@
+{# Mini tendencia del indicador: línea gris de contexto y el último tramo destacado. Recibe `s`. #}
+<svg class="sparkline" viewBox="0 0 {{ s.ancho }} {{ s.alto }}" width="{{ s.ancho }}" height="{{ s.alto }}" aria-hidden="true" focusable="false">
+  <polyline points="{{ s.puntos }}"/>
+  <circle cx="{{ s.ultimo.x|stringformat:".1f" }}" cy="{{ s.ultimo.y|stringformat:".1f" }}" r="4"/>
+</svg>

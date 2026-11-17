@@ -1,0 +1,52 @@
+{% extends "crm/base_crm.html" %}
+
+{% block title %}Embudo de cotizaciones · CRM Quinana Tours{% endblock %}
+
+{% block content %}
+  <div class="card">
+    {% with vista="embudo" %}{% include "crm/_cotizaciones_cabecera.html" %}{% endwith %}
+
+    <div class="kanban">
+      {% for columna in columnas %}
+        <section class="kanban-col kanban-col--{{ columna.estado|lower }}" aria-labelledby="col-{{ columna.estado }}">
+          <header class="kanban-col-header">
+            <h2 id="col-{{ columna.estado }}">{{ columna.estado.label }} <span class="kanban-count">{{ columna.leads|length }}</span></h2>
+            {% if columna.estado == "CERRADA" %}
+              <p>Últimos {{ dias_cerradas }} días · {{ columna.ganadas }} ganada{{ columna.ganadas|pluralize }}</p>
+            {% else %}
+              <p>${{ columna.valor|floatformat:"0g" }} USD estimados</p>
+            {% endif %}
+          </header>
+
+          <ul class="kanban-list">
+            {% for lead in columna.leads %}
+              <li class="kanban-card">
+                <a class="kanban-card-title" href="{% url 'lead_detail' lead.pk %}">{{ lead.nombre_cliente }}</a>
+                <p class="kanban-card-tour">{{ lead.tour }}</p>
+                <p class="kanban-card-meta">
+                  {{ lead.numero_pasajeros }} pax · {{ lead.fecha_estimada|date:"d M Y" }}
+                </p>
+                <p class="kanban-card-meta">
+                  {% if lead.responsable %}{{ lead.responsable.get_full_name|default:lead.responsable.get_username }}{% else %}<span class="tag-warn">Sin asignar</span>{% endif %}
+                  {% if lead.esta_cerrada %} · {% include "crm/_estado.html" %}{% endif %}
+                </p>
+                {% if lead.siguiente and perms.tours.change_leadcotizacion %}
+                  <form method="post" action="{% url 'lead_detail' lead.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="accion" value="estado">
+                    <input type="hidden" name="estado" value="{{ lead.siguiente }}">
+                    <input type="hidden" name="volver" value="embudo">
+                    <input type="hidden" name="filtros" value="{{ querystring }}">
+                    <button type="submit" class="kanban-advance">Pasar a {{ lead.siguiente.label }} →</button>
+                  </form>
+                {% endif %}
+              </li>
+            {% empty %}
+              <li class="kanban-empty">Sin cotizaciones</li>
+            {% endfor %}
+          </ul>
+        </section>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}

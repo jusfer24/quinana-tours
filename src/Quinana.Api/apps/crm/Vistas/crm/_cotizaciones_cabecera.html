@@ -1,0 +1,26 @@
+{# Cabecera común de la lista y el embudo: título, cambio de vista, nueva cotización y filtros. #}
+<div class="card-header">
+  <h1>Cotizaciones</h1>
+  <div class="header-actions">
+    <nav class="segmented" aria-label="Vista">
+      <a href="{% url 'lead_list' %}{% if querystring %}?{{ querystring }}{% endif %}"{% if vista == "lista" %} aria-current="page"{% endif %}>Lista</a>
+      <a href="{% url 'lead_embudo' %}{% if querystring %}?{{ querystring }}{% endif %}"{% if vista == "embudo" %} aria-current="page"{% endif %}>Embudo</a>
+    </nav>
+    {% if perms.tours.add_leadcotizacion %}<a href="{% url 'lead_create' %}" class="btn btn-primary">+ Nueva cotización</a>{% endif %}
+  </div>
+</div>
+
+<form method="get" class="filters" role="search" aria-label="Filtrar cotizaciones">
+  {% for field in filtro %}
+    {% if vista != "embudo" or field.name != "estado" %}
+      <div class="field field--compact field--{{ field.name }}">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+      </div>
+    {% endif %}
+  {% endfor %}
+  <div class="filters-actions">
+    <button type="submit" class="btn btn-primary btn-sm">Filtrar</button>
+    {% if filtro.activo %}<a class="link" href="?">Quitar filtros</a>{% endif %}
+  </div>
+</form>

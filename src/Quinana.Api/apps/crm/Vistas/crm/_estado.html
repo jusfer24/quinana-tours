@@ -1,0 +1,6 @@
+{# Etiqueta de color con la etapa del embudo (y el resultado si está cerrada). Recibe `lead`. #}
+{% if lead.esta_cerrada %}
+  <span class="estado estado--{{ lead.resultado_cierre|lower }}">{{ lead.get_resultado_cierre_display }}</span>
+{% else %}
+  <span class="estado estado--{{ lead.estado_embudo|lower }}">{{ lead.get_estado_embudo_display }}</span>
+{% endif %}

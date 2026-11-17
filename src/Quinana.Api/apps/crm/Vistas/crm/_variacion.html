@@ -1,0 +1,10 @@
+{# Variación frente al periodo anterior. Recibe `cambio` (número o None) y `unidad` ("%" o " pts"). #}
+{% if cambio is None %}
+  <span class="delta delta--neutra">Sin datos del periodo anterior</span>
+{% elif cambio > 0 %}
+  <span class="delta delta--sube"><span aria-hidden="true">▲</span> {{ cambio }}{{ unidad }} <span class="delta-ref">vs periodo anterior</span></span>
+{% elif cambio < 0 %}
+  <span class="delta delta--baja"><span aria-hidden="true">▼</span> {{ cambio|stringformat:"d"|slice:"1:" }}{{ unidad }} <span class="delta-ref">vs periodo anterior</span></span>
+{% else %}
+  <span class="delta delta--neutra">Igual que el periodo anterior</span>
+{% endif %}

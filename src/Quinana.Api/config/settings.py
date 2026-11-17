@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
 import sys
+
+import dj_database_url
 from dotenv import load_dotenv
 from pathlib import Path
 
@@ -23,11 +25,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Permite que Django reconozca las carpetas dentro de 'apps/' directamente por su nombre
 sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
 
-# Autenticación: adónde se envía al usuario sin sesión, tras iniciarla y tras cerrarla.
-LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'tour_list'
-LOGOUT_REDIRECT_URL = 'login'
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
@@ -35,9 +32,57 @@ LOGOUT_REDIRECT_URL = 'login'
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# En local queda activo si no se define; en producción (render.yaml) se pone DJANGO_DEBUG=False.
+DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+    if host.strip()
+]
+# Render publica el dominio del servicio (quinana-api.onrender.com) en esta variable.
+if os.getenv('RENDER_EXTERNAL_HOSTNAME'):
+    ALLOWED_HOSTS.append(os.environ['RENDER_EXTERNAL_HOSTNAME'])
+
+# Sitio público (Astro). Va en otro origen, así que necesita CORS con cookies y que
+# Django confíe en él para CSRF. En producción, definir FRONTEND_ORIGINS en el .env
+# (separados por comas). El front y la API deben compartir dominio (p. ej.
+# quinanatours.com y api.quinanatours.com) para que el navegador envíe la cookie de sesión.
+FRONTEND_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv(
+        'FRONTEND_ORIGINS', 'http://localhost:4321,http://localhost:4322'
+    ).split(',')
+    if origin.strip()
+]
+# Página principal del sitio público (Astro).
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:4321/')
+
+# Autenticación: Django no tiene página de login propia. Sin sesión, el CRM envía al
+# "Acceso del equipo" del sitio público, y al cerrar sesión se vuelve ahí mismo.
+LOGIN_URL = LOGOUT_REDIRECT_URL = f"{FRONTEND_URL.rstrip('/')}/login#equipo"
+CORS_ALLOWED_ORIGINS = FRONTEND_ORIGINS
+CORS_ALLOW_CREDENTIALS = True
+CORS_URLS_REGEX = r'^/api/.*$'
+CSRF_TRUSTED_ORIGINS = FRONTEND_ORIGINS
+
+# Producción: cookies solo por HTTPS. Si el front y la API están en dominios distintos
+# (p. ej. *.pages.dev y *.onrender.com), definir COOKIE_SAMESITE=None para que el
+# navegador envíe la sesión; Safari puede bloquearla igual hasta tener dominio propio.
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')  # Render termina el HTTPS
+    SESSION_COOKIE_SAMESITE = CSRF_COOKIE_SAMESITE = os.getenv('COOKIE_SAMESITE', 'Lax')
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_RENDERER_CLASSES': ['rest_framework.renderers.JSONRenderer'],
+    # Solicitudes de cotización del sitio público: máximo por IP (frena bots y envíos repetidos).
+    'DEFAULT_THROTTLE_RATES': {'cotizaciones': '10/hour'},
+}
 
 
 # Application definition
@@ -49,12 +94,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    "rest_framework",
+    "corsheaders",
     "tours",
+    "accounts",
+    "crm",
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # sirve static/ en producción
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # antes de CommonMiddleware
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -69,10 +120,11 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        # Agregamos la ruta hacia tours/Vistas:
+        # Plantillas de cada app (carpeta Vistas/) y las compartidas del panel:
         'DIRS': [
             BASE_DIR / 'apps' / 'tours' / 'Vistas',
-            BASE_DIR / 'templates',  # Para la plantilla de login/logout
+            BASE_DIR / 'apps' / 'crm' / 'Vistas',
+            BASE_DIR / 'templates',  # Plantilla base del panel (base.html)
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -81,6 +133,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'crm.context_processors.panel',
             ],
         },
     },
@@ -92,11 +145,13 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# PostgreSQL en producción con DATABASE_URL (p. ej. la cadena de conexión de Neon);
+# sin esa variable se usa SQLite local.
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600,
+    )
 }
 
 
@@ -136,6 +191,11 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # salida de collectstatic (ignorada en git)
+STORAGES = {
+    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+    'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage'},
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

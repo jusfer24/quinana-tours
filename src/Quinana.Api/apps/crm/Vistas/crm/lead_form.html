@@ -1,0 +1,20 @@
+{% extends "crm/base_crm.html" %}
+
+{% block title %}Nueva cotización · CRM Quinana Tours{% endblock %}
+
+{% block content %}
+  <div class="card card--narrow">
+    <a class="link back-link" href="{% url 'lead_list' %}">← Cotizaciones</a>
+    <h1>Nueva cotización</h1>
+    <p class="muted">Para solicitudes que llegan por teléfono, WhatsApp, email o en persona. Las del sitio web se registran solas.</p>
+
+    <form method="post" class="form form--grid" novalidate>
+      {% csrf_token %}
+      {% include "crm/_campos.html" %}
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Registrar cotización</button>
+        <a href="{% url 'lead_list' %}" class="btn btn-secondary">Cancelar</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

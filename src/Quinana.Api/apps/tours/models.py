@@ -17,6 +17,7 @@ from django.core.validators import (
 from django.db import models
 from django.db.models import Q
 from django.db.models.functions import Lower
+from django.utils import timezone
 
 
 # ==========================================================
@@ -294,6 +295,12 @@ class LeadCotizacion(models.Model):
         blank=True,
     )
 
+    # Lo que el cliente escribió al pedir la cotización (intereses, dudas, presupuesto).
+    mensaje = models.TextField("mensaje del cliente", blank=True)
+
+    # Cuándo llegó la solicitud: ordena el CRM y detecta las que llevan días sin atender.
+    created_at = models.DateTimeField("fecha de solicitud", default=timezone.now, editable=False)
+
     estado_embudo = models.CharField(
         "estado comercial",
         max_length=20,
@@ -352,7 +359,9 @@ class LeadCotizacion(models.Model):
     )
 
     class Meta:
-        ordering = ["-id"]
+        ordering = ["-created_at", "-id"]
+        verbose_name = "cotización"
+        verbose_name_plural = "cotizaciones"
         constraints = [
             models.CheckConstraint(
                 condition=Q(numero_pasajeros__gte=1),
@@ -379,6 +388,55 @@ class LeadCotizacion(models.Model):
 
     def __str__(self):
         return f"{self.nombre_cliente} - {self.tour}"
+
+    @property
+    def esta_cerrada(self):
+        return self.estado_embudo == self.EstadoEmbudo.CERRADA
+
+    @property
+    def valor_estimado(self):
+        """Precio del tour por el número de pasajeros (referencia para el embudo)."""
+        return self.tour.price_usd * self.numero_pasajeros
+
+
+# ==========================================================
+# 7b. ACTIVIDAD_LEAD (historial y notas de seguimiento del CRM)
+# ==========================================================
+
+class ActividadLead(models.Model):
+    """Cada cosa que pasa con una cotización: notas del equipo y cambios automáticos."""
+
+    class Tipo(models.TextChoices):
+        CREACION = "CREACION", "Cotización registrada"
+        NOTA = "NOTA", "Nota"
+        ESTADO = "ESTADO", "Cambio de estado"
+        ASIGNACION = "ASIGNACION", "Asignación"
+        PAGO = "PAGO", "Pago registrado"
+
+    lead = models.ForeignKey(
+        LeadCotizacion,
+        on_delete=models.CASCADE,
+        related_name="actividades",
+    )
+    autor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="actividades_crm",
+        verbose_name="autor",
+    )
+    tipo = models.CharField("tipo", max_length=20, choices=Tipo.choices)
+    texto = models.TextField("texto")
+    fecha = models.DateTimeField("fecha", default=timezone.now, editable=False)
+
+    class Meta:
+        ordering = ["-fecha", "-id"]
+        verbose_name = "actividad de cotización"
+        verbose_name_plural = "actividades de cotizaciones"
+
+    def __str__(self):
+        return f"{self.get_tipo_display()} - {self.lead}"
 
 
 # ==========================================================

@@ -1,0 +1,217 @@
+{% extends "crm/base_crm.html" %}
+
+{% block title %}{{ lead.nombre_cliente }} · Cotizaciones · CRM Quinana Tours{% endblock %}
+
+{% block content %}
+  <a class="back-link back-link--light" href="{% url 'lead_list' %}">← Cotizaciones</a>
+
+  <div class="detail">
+    {# ---------- Columna principal ---------- #}
+    <div class="detail-main">
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <h1>{{ lead.nombre_cliente }}</h1>
+            <p class="muted muted--tight">Recibida el {{ lead.created_at|date:"d M Y, H:i" }}{% if lead.origen_lead %} · {{ lead.origen_lead }}{% endif %}</p>
+          </div>
+          {% include "crm/_estado.html" %}
+        </div>
+
+        <dl class="facts">
+          <div><dt>Tour</dt><dd>{{ lead.tour }}<span class="cell-sub">{{ lead.tour.destination }} · {{ lead.tour.duration_label }}</span></dd></div>
+          <div><dt>Pasajeros</dt><dd>{{ lead.numero_pasajeros }}</dd></div>
+          <div><dt>Fecha de viaje</dt><dd>{{ lead.fecha_estimada|date:"d M Y" }}<span class="cell-sub">{% if viaje_pasado %}Ya pasó{% else %}En {{ lead.fecha_estimada|timeuntil }}{% endif %}</span></dd></div>
+          <div><dt>Valor estimado</dt><dd>${{ lead.valor_estimado|floatformat:"2g" }} USD<span class="cell-sub">${{ lead.tour.price_usd|floatformat:"2g" }} × {{ lead.numero_pasajeros }} pax</span></dd></div>
+        </dl>
+
+        {% if lead.mensaje %}
+          <h2 class="section-title">Mensaje del cliente</h2>
+          <blockquote class="quote">{{ lead.mensaje|linebreaksbr }}</blockquote>
+        {% endif %}
+      </section>
+
+      <section class="card">
+        <h2 class="section-title">Contacto</h2>
+        <ul class="contact-list">
+          {% for contacto in contactos %}
+            <li>
+              <strong>{{ contacto.nombre }}</strong>
+              <span class="cell-sub">Prefiere: {{ contacto.get_canal_preferido_display }}</span>
+              <div class="contact-actions">
+                <a class="btn btn-secondary btn-sm" href="mailto:{{ contacto.email }}">{{ contacto.email }}</a>
+                {% if contacto.whatsapp %}
+                  <a class="btn btn-secondary btn-sm" href="https://wa.me/{{ contacto.whatsapp }}" target="_blank" rel="noopener">WhatsApp {{ contacto.telefono }}</a>
+                {% endif %}
+              </div>
+            </li>
+          {% empty %}
+            <li>
+              <div class="contact-actions">
+                <a class="btn btn-secondary btn-sm" href="mailto:{{ lead.email_cliente }}">{{ lead.email_cliente }}</a>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+
+        {% if pasajeros %}
+          <h2 class="section-title">Pasajeros</h2>
+          <div class="table-wrapper">
+            <table class="table">
+              <thead><tr><th scope="col">Nombre</th><th scope="col">Edad</th><th scope="col">Requerimientos dietéticos</th></tr></thead>
+              <tbody>
+                {% for p in pasajeros %}
+                  <tr><td>{{ p.nombre }}</td><td>{{ p.edad }}</td><td>{{ p.requerimientos_dieteticos|default:"—" }}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endif %}
+      </section>
+
+      <section class="card">
+        <div class="card-header card-header--tight">
+          <h2 class="section-title">Pagos</h2>
+          <span class="muted muted--tight">Aprobado: <strong>${{ total_aprobado|floatformat:"2g" }} USD</strong></span>
+        </div>
+        {% if pagos %}
+          <div class="table-wrapper">
+            <table class="table">
+              <thead><tr><th scope="col">Fecha</th><th scope="col">Tipo</th><th scope="col">Monto</th><th scope="col">Estado</th><th scope="col">Medio / referencia</th></tr></thead>
+              <tbody>
+                {% for pago in pagos %}
+                  <tr>
+                    <td>{{ pago.fecha_pago|date:"d M Y"|default:"—" }}</td>
+                    <td>{{ pago.get_tipo_pago_display }}</td>
+                    <td>${{ pago.monto|floatformat:"2g" }}</td>
+                    <td><span class="estado estado--pago-{{ pago.estado_transaccion|lower }}">{{ pago.get_estado_transaccion_display }}</span></td>
+                    <td>{{ pago.pasarela|default:"—" }}<span class="cell-sub">{{ pago.token_referencia }}</span></td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p class="muted">Aún no hay pagos registrados.</p>
+        {% endif %}
+
+        {% if perms.tours.add_pagohito %}
+          <details class="inline-form"{% if form_pago.errors %} open{% endif %}>
+            <summary class="link">+ Registrar pago</summary>
+            <form method="post" class="form form--grid" novalidate>
+              {% csrf_token %}
+              <input type="hidden" name="accion" value="pago">
+              {% include "crm/_campos.html" with form=form_pago %}
+              <div class="form-actions"><button type="submit" class="btn btn-primary btn-sm">Guardar pago</button></div>
+            </form>
+          </details>
+        {% endif %}
+      </section>
+
+      <section class="card">
+        <h2 class="section-title">Historial y notas</h2>
+        {% if perms.tours.change_leadcotizacion %}
+          <form method="post" class="form note-form" novalidate>
+            {% csrf_token %}
+            <input type="hidden" name="accion" value="nota">
+            {% include "crm/_campos.html" with form=form_nota %}
+            <div><button type="submit" class="btn btn-primary btn-sm">Agregar nota</button></div>
+          </form>
+        {% endif %}
+
+        <ol class="timeline">
+          {% for actividad in actividades %}
+            <li class="timeline-item timeline-item--{{ actividad.tipo|lower }}">
+              <p class="timeline-meta">
+                <strong>{{ actividad.get_tipo_display }}</strong>
+                · {% if actividad.autor %}{{ actividad.autor.get_full_name|default:actividad.autor.get_username }}{% else %}Sistema{% endif %}
+                · <span title="{{ actividad.fecha|date:"d/m/Y H:i" }}">hace {{ actividad.fecha|timesince }}</span>
+              </p>
+              <p class="timeline-text">{{ actividad.texto|linebreaksbr }}</p>
+            </li>
+          {% empty %}
+            <li class="muted">Sin actividad registrada.</li>
+          {% endfor %}
+        </ol>
+      </section>
+    </div>
+
+    {# ---------- Columna lateral: acciones ---------- #}
+    <aside class="detail-side">
+      <section class="card">
+        <h2 class="section-title">Responsable</h2>
+        <p class="side-value">
+          {% if lead.responsable %}{{ lead.responsable.get_full_name|default:lead.responsable.get_username }}{% else %}<span class="tag-warn">Sin asignar</span>{% endif %}
+        </p>
+        {% if perms.tours.change_leadcotizacion %}
+          {% if lead.responsable_id != user.pk %}
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="accion" value="asignar">
+              <input type="hidden" name="responsable" value="{{ user.pk }}">
+              <button type="submit" class="btn btn-primary btn-sm btn-full">Asignármela</button>
+            </form>
+          {% endif %}
+          <form method="post" class="form side-form" novalidate>
+            {% csrf_token %}
+            <input type="hidden" name="accion" value="asignar">
+            {% include "crm/_campos.html" with form=form_asignar %}
+            <button type="submit" class="btn btn-secondary btn-sm btn-full">Cambiar responsable</button>
+          </form>
+        {% endif %}
+      </section>
+
+      <section class="card">
+        <h2 class="section-title">Estado</h2>
+        {% if lead.esta_cerrada %}
+          <p class="side-value">{% include "crm/_estado.html" %}</p>
+          <p class="muted muted--tight">Cerrada el {{ lead.fecha_cierre|date:"d M Y" }}.</p>
+          {% if lead.motivo_cierre %}<blockquote class="quote">{{ lead.motivo_cierre }}</blockquote>{% endif %}
+          {% if perms.tours.change_leadcotizacion %}
+            <form method="post" class="side-form">
+              {% csrf_token %}
+              <input type="hidden" name="accion" value="reabrir">
+              <button type="submit" class="btn btn-secondary btn-sm btn-full">Reabrir cotización</button>
+            </form>
+          {% endif %}
+        {% else %}
+          <ol class="steps" aria-label="Etapas del embudo">
+            {% for valor, etiqueta in form_estado.fields.estado.choices %}
+              <li{% if valor == lead.estado_embudo %} aria-current="step"{% endif %}>{{ etiqueta }}</li>
+            {% endfor %}
+          </ol>
+          {% if perms.tours.change_leadcotizacion %}
+            {% if siguiente %}
+              <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="estado">
+                <input type="hidden" name="estado" value="{{ siguiente }}">
+                <button type="submit" class="btn btn-primary btn-sm btn-full">Pasar a {{ siguiente.label }} →</button>
+              </form>
+            {% endif %}
+            <details class="inline-form"{% if form_estado.errors %} open{% endif %}>
+              <summary class="link">Mover a otra etapa</summary>
+              <form method="post" class="form side-form" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="estado">
+                {% include "crm/_campos.html" with form=form_estado %}
+                <button type="submit" class="btn btn-secondary btn-sm btn-full">Mover</button>
+              </form>
+            </details>
+          {% endif %}
+        {% endif %}
+      </section>
+
+      {% if not lead.esta_cerrada and perms.tours.change_leadcotizacion %}
+        <section class="card">
+          <h2 class="section-title">Cerrar cotización</h2>
+          <form method="post" class="form side-form" novalidate>
+            {% csrf_token %}
+            <input type="hidden" name="accion" value="cerrar">
+            {% include "crm/_campos.html" with form=form_cerrar %}
+            <button type="submit" class="btn btn-primary btn-sm btn-full">Cerrar</button>
+          </form>
+        </section>
+      {% endif %}
+    </aside>
+  </div>
+{% endblock %}

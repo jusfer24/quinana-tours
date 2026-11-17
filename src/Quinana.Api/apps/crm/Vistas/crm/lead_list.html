@@ -1,0 +1,60 @@
+{% extends "crm/base_crm.html" %}
+
+{% block title %}Cotizaciones · CRM Quinana Tours{% endblock %}
+
+{% block content %}
+  <div class="card">
+    {% with vista="lista" %}{% include "crm/_cotizaciones_cabecera.html" %}{% endwith %}
+
+    <p class="muted muted--tight result-count">
+      {{ paginator.count }} cotización{{ paginator.count|pluralize:"es" }}
+    </p>
+
+    <div class="table-wrapper">
+      <table class="table table--leads">
+        <thead>
+          <tr>
+            <th scope="col">Cliente</th>
+            <th scope="col">Tour y viaje</th>
+            <th scope="col">Estado</th>
+            <th scope="col">Responsable</th>
+            <th scope="col">Recibida</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for lead in leads %}
+            <tr>
+              <td>
+                <a class="link" href="{% url 'lead_detail' lead.pk %}">{{ lead.nombre_cliente }}</a>
+                <span class="cell-sub">{{ lead.email_cliente }}</span>
+              </td>
+              <td>
+                {{ lead.tour }}
+                <span class="cell-sub">{{ lead.numero_pasajeros }} pax · {{ lead.fecha_estimada|date:"d M Y" }}</span>
+              </td>
+              <td>{% include "crm/_estado.html" %}</td>
+              <td>
+                {% if lead.responsable %}{{ lead.responsable.get_full_name|default:lead.responsable.get_username }}{% else %}<span class="tag-warn">Sin asignar</span>{% endif %}
+              </td>
+              <td class="nowrap"><span title="{{ lead.created_at|date:'d/m/Y H:i' }}">hace {{ lead.created_at|timesince }}</span></td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="5" class="empty">
+                {% if filtro.activo %}Ninguna cotización coincide con los filtros.{% else %}Todavía no hay cotizaciones.{% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if is_paginated %}
+      <nav class="pagination" aria-label="Páginas">
+        {% if page_obj.has_previous %}<a class="btn btn-secondary btn-sm" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}">← Anterior</a>{% endif %}
+        <span>Página {{ page_obj.number }} de {{ paginator.num_pages }}</span>
+        {% if page_obj.has_next %}<a class="btn btn-secondary btn-sm" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}">Siguiente →</a>{% endif %}
+      </nav>
+    {% endif %}
+  </div>
+{% endblock %}

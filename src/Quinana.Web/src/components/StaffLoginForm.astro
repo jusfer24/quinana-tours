@@ -1,0 +1,67 @@
+---
+// Acceso del equipo que maneja el CRM (usuario de Django, solo personal). Estilos en
+// src/styles/auth.css y validación en src/lib/auth-forms.ts.
+---
+
+<form class="auth-form" id="staff-form" novalidate>
+	<div class="auth-field">
+		<label for="staff-username">Usuario</label>
+		<div class="auth-control">
+			<input
+				class="auth-input"
+				id="staff-username"
+				name="username"
+				type="text"
+				autocomplete="username"
+				autocapitalize="none"
+				spellcheck="false"
+				placeholder="Tu usuario del panel"
+				required
+				data-required-msg="Ingresa tu usuario."
+				aria-describedby="staff-username-error"
+			/>
+		</div>
+		<p class="auth-error" id="staff-username-error" aria-live="polite"></p>
+	</div>
+
+	<div class="auth-field">
+		<label for="staff-password">Contraseña</label>
+		<div class="auth-control auth-control--password">
+			<input
+				class="auth-input"
+				id="staff-password"
+				name="password"
+				type="password"
+				autocomplete="current-password"
+				placeholder="Tu contraseña"
+				required
+				data-required-msg="Ingresa tu contraseña."
+				aria-describedby="staff-password-error"
+			/>
+			<button
+				type="button"
+				class="auth-toggle-password"
+				aria-label="Mostrar contraseña"
+				aria-controls="staff-password"
+				aria-pressed="false"
+			>
+				Mostrar
+			</button>
+		</div>
+		<p class="auth-error" id="staff-password-error" aria-live="polite"></p>
+	</div>
+
+	<button type="submit" class="auth-submit" data-busy-label="Ingresando…">Ingresar al panel</button>
+
+	<p class="auth-status" role="status" aria-live="polite"></p>
+
+	<button type="button" class="auth-link staff-back" data-go="login">
+		<span aria-hidden="true">←</span> Soy viajero, volver al inicio de sesión
+	</button>
+</form>
+
+<style>
+	.staff-back {
+		align-self: center;
+	}
+</style>
