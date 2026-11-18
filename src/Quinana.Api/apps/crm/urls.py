@@ -2,6 +2,8 @@
 
 from django.urls import include, path
 
+from tours.urls import categoria_urlpatterns, destino_urlpatterns
+
 from .views import InicioView, LeadCreateView, LeadDetailView, LeadEmbudoView, LeadListView
 
 urlpatterns = [
@@ -11,4 +13,6 @@ urlpatterns = [
     path("cotizaciones/nueva/", LeadCreateView.as_view(), name="lead_create"),
     path("cotizaciones/<int:pk>/", LeadDetailView.as_view(), name="lead_detail"),
     path("catalogo/tours/", include("tours.urls")),
+    path("catalogo/destinos/", include(destino_urlpatterns)),
+    path("catalogo/categorias/", include(categoria_urlpatterns)),
 ]

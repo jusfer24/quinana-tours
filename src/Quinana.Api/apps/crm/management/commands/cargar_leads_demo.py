@@ -24,6 +24,7 @@ from tours.models import ActividadLead, Contacto, LeadCotizacion, PagoHito, Pasa
 DOMINIO = "@demo.quinana.test"
 Estado = LeadCotizacion.EstadoEmbudo
 Resultado = LeadCotizacion.ResultadoCierre
+HISTORICAS = 23  # + las 11 de LEADS ≈ 34 en total
 
 # (nombre, teléfono, pasajeros, días desde la solicitud, días hasta el viaje, etapa, resultado, origen, mensaje)
 LEADS = [
@@ -158,7 +159,7 @@ class Command(BaseCommand):
             + ["Email"] * 2 + ["Referido"] * 2 + ["Redes sociales"] * 2 + ["Feria / evento"]
         )
         creadas = 0
-        for n in range(80):
+        for n in range(HISTORICAS):
             # Algo más de solicitudes en los meses recientes (la demanda viene creciendo).
             dias_atras = int(azar.triangular(0, 200, 70))
             creada = ahora - timedelta(days=dias_atras, hours=azar.randint(0, 23))

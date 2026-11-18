@@ -1,0 +1,18 @@
+{# Selector de ícono de la categoría: un botón por ícono (radio oculto, el dibujo es la etiqueta). #}
+<div class="icon-picker" role="radiogroup"{% if widget.attrs.id %} id="{{ widget.attrs.id }}"{% endif %}>
+  {% for group, options, index in widget.optgroups %}
+    {% for option in options %}
+      <label class="icon-option" title="{{ option.label }}">
+        <input type="radio" name="{{ option.name }}" value="{{ option.value|stringformat:'s' }}" id="{{ option.attrs.id }}"{% if option.selected %} checked{% endif %}>
+        <span class="icon-option-img" aria-hidden="true">
+          {% if option.svg %}
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{{ option.svg }}</svg>
+          {% else %}
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M5.6 18.4 18.4 5.6"/></svg>
+          {% endif %}
+        </span>
+        <span class="icon-option-label">{{ option.label }}</span>
+      </label>
+    {% endfor %}
+  {% endfor %}
+</div>

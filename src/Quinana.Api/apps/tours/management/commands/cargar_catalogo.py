@@ -2,9 +2,11 @@
 
 Ejecutar con:  python manage.py cargar_catalogo
 
-Se puede correr varias veces: crea lo que falta y actualiza lo existente por título,
-sin duplicar. Sirve para que cada base local y el servidor del despliegue tengan el
-mismo catálogo que se ve en la página pública.
+Se puede correr varias veces sin duplicar: solo crea lo que falta. El catálogo se edita
+en el CRM, así que el comando no toca los tours que ya existen (se buscan por título) y a
+los destinos solo les completa los textos y la foto vacíos, y les asigna categoría a los
+tours de ejemplo que no tengan ninguna (ver tours/datos). Sirve para
+arrancar una base nueva, local o del despliegue, con el catálogo del sitio público.
 """
 
 from decimal import Decimal
@@ -12,10 +14,8 @@ from decimal import Decimal
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from tours.models import Destination, Tour
-
-# Las cuatro regiones de la página pública (sección "Destinos").
-DESTINOS = ["Galápagos", "Andes", "Amazonía", "Costa"]
+from tours.datos import DESTINOS, completar_categorias, completar_destinos, completar_iconos
+from tours.models import Categoria, Destination, Tour
 
 TOURS = [
     {
@@ -116,30 +116,25 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, *args, **options):
-        destinos = {}
-        for name in DESTINOS:
-            destino = Destination.objects.filter(name__iexact=name).first()
-            if destino is None:
-                destino = Destination.objects.create(name=name)
-            destinos[name] = destino
+        completar_destinos(Destination, crear=True, con_fotos=True)
+        destinos = {d["name"]: Destination.objects.get(name__iexact=d["name"]) for d in DESTINOS}
 
-        creados = actualizados = 0
+        creados = 0
         for data in TOURS:
-            values = {**data, "destination": destinos[data["destination"]], "price_usd": Decimal(data["price_usd"])}
-            title = values.pop("title")
-            # full_clean aplica las mismas validaciones del modelo que el CRUD.
-            tour = Tour.objects.filter(title=title).first() or Tour(title=title)
-            created = tour.pk is None
-            for field, value in values.items():
-                setattr(tour, field, value)
+            if Tour.objects.filter(title=data["title"]).exists():
+                continue
+            tour = Tour(**{**data, "destination": destinos[data["destination"]], "price_usd": Decimal(data["price_usd"])})
+            # full_clean aplica las mismas validaciones del modelo que el CRM.
             tour.full_clean()
             tour.save()
-            creados += created
-            actualizados += not created
+            creados += 1
+
+        completar_categorias(Categoria, Tour)
+        completar_iconos(Categoria)
 
         self.stdout.write(
             self.style.SUCCESS(
-                f"Catálogo listo: {len(destinos)} destinos, {creados} tours creados, "
-                f"{actualizados} actualizados."
+                f"Catálogo listo: {len(destinos)} destinos, {creados} tours creados "
+                f"({len(TOURS) - creados} ya existían y no se tocaron)."
             )
         )

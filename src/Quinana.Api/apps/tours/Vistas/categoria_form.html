@@ -1,0 +1,37 @@
+{% extends "crm/base_crm.html" %}
+
+{% block title %}{% if object %}Editar «{{ object.nombre }}»{% else %}Nueva categoría{% endif %} · CRM Quinana Tours{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <a class="link back-link" href="{% url 'categoria_list' %}">← Categorías</a>
+    <h1>{% if object %}Editar categoría{% else %}Nueva categoría{% endif %}</h1>
+    <p class="muted">Aparece como botón en el filtro de tours del sitio y como etiqueta en la tarjeta de cada tour, en español e inglés.</p>
+
+    <form method="post" class="form" novalidate>
+      {% csrf_token %}
+      {% for error in form.non_field_errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+
+      <fieldset class="form-section">
+        <legend>Nombre</legend>
+        <div class="form--grid form--pairs">
+          {% include "crm/_campo.html" with field=form.nombre %}
+          {% include "crm/_campo.html" with field=form.nombre_en %}
+          {% include "crm/_campo.html" with field=form.orden %}
+        </div>
+      </fieldset>
+
+      <fieldset class="form-section">
+        <legend>Ícono</legend>
+        {% include "crm/_campo.html" with field=form.icono %}
+      </fieldset>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <a href="{% url 'categoria_list' %}" class="btn btn-secondary">Cancelar</a>
+      </div>
+
+      {% include "crm/_formulario_catalogo.html" %}
+    </form>
+  </div>
+{% endblock %}

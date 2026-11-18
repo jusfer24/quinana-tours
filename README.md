@@ -42,6 +42,7 @@ En desarrollo (MVP).
 | Página de acceso del sitio público (Astro): diseño, validación y términos | Interfaz completada |
 | Catálogo público de tours y formulario «Solicitar cotización» (crea el lead en el CRM) | Completado |
 | Panel interno (CRM): menú lateral, inicio y acceso solo para el equipo | Completado |
+| Catálogo editable en el CRM (tours, destinos con fotos y categorías): el sitio público lo muestra tal cual | Completado |
 | Gestión de cotizaciones (leads) en el CRM: lista, embudo, ficha e historial | Completado |
 | Inicio del CRM con indicadores, gráficas y calendario de viajes | Completado |
 
@@ -52,6 +53,7 @@ En desarrollo (MVP).
 - **Inicio de sesión del equipo** desde el «Acceso del equipo» del sitio público (`/login#equipo`), con usuario y contraseña de Django. Solo entran cuentas de personal (`is_staff`), mediante la API `/api/auth/staff-login/`. Django no tiene página de login propia.
 - **Panel interno (CRM) en `/crm/`:** barra lateral desplegable (en escritorio se contrae a íconos y recuerda la elección; en móvil se abre con un botón), buscador de clientes y usuario en la barra superior. Solo entra el personal (`is_staff`): sin sesión se redirige al «Acceso del equipo» del sitio público y un viajero con sesión recibe una página 403. El catálogo de tours está en `/crm/catalogo/tours/` (la ruta antigua `/tours/` redirige ahí).
 - **Cotizaciones (`/crm/cotizaciones/`):** lista con filtros (estado, responsable, tour, fechas y búsqueda), vista de embudo por etapas con el valor estimado de cada una, alta manual de cotizaciones que llegan por teléfono o WhatsApp, y ficha con contacto (email y WhatsApp), pasajeros, pagos, asignación de responsable, cambio de etapa, cierre (ganada, perdida o cancelada, con motivo) y reapertura. Cada cambio queda en el historial (`ActividadLead`) junto con las notas de seguimiento del equipo.
+- **Catálogo en el CRM, única fuente del sitio público:** `/crm/catalogo/tours/` muestra cada tour como su tarjeta en la portada (foto, destino, días, título, descripción y precio) y `/crm/catalogo/destinos/` edita las regiones: nombre y frase en español e inglés, foto con su descripción y orden. Las fotos que se suben son propias: al cambiar la foto de un destino se borra el crédito de la anterior (las cuatro iniciales son de Wikimedia con licencia CC y su crédito se muestra en el pie mientras se usen). `/crm/catalogo/categorias/` edita los tipos de viaje (Aventura, Naturaleza y fauna, Cultura, Playa), con nombre en español e inglés y un ícono a elegir (`tours/iconos.py`); cada tour puede tener varios. Un tour puede tener foto propia; si no, usa la de su destino. El sitio lo lee de `/api/tours/`, `/api/destinos/` y `/api/categorias/` (sección «Destinos», perfil de altitud, filtros por tipo de viaje y destino, etiquetas y fotos de las tarjetas y créditos del pie). Al editar, el CRM pide confirmar y lista los campos que cambiaron; al guardar, un aviso flotante animado confirma el cambio. Las fotos (JPG, PNG o WebP, hasta 5 MB) se guardan en `media/`; Astro las descarga al compilar y las sirve optimizadas en WebP. **En producción hace falta un almacenamiento externo para `media/`** (el disco de Render se borra en cada despliegue).
 - **Inicio del CRM:** filtro de periodo (30 días, 90 días o 12 meses) e indicadores con su variación frente al periodo anterior: solicitudes recibidas, ventas ganadas (USD), tasa de cierre y primera respuesta (mediana contra la meta de 24 h). Gráfica de solicitudes por semana o mes (ganadas y resto), «Requieren atención» (sin responsable, viaje cercano aún abierto, sin movimiento), calendario de viajes confirmados con los días en ruta, demanda por destino, canal de llegada y tabla del equipo. Todo se calcula con la base de datos en `crm/metricas.py` y se dibuja en SVG, sin librerías de gráficas.
 - **Cierre de sesión** mediante una petición POST con protección CSRF. Tras cerrar sesión, se vuelve al «Acceso del equipo» y las rutas quedan bloqueadas otra vez.
 - **CRUD de tours:** crear, listar, editar y eliminar tours (título, destino, duración, descripción y precio), con mensajes de confirmación.
@@ -116,8 +118,9 @@ cd Web-Page_Quinana-Tours
    python manage.py createsuperuser
    ```
 
-   Opcional: carga el catálogo y cotizaciones de ejemplo para probar el CRM (las de ejemplo usan correos
-   `@demo.quinana.test` y se reemplazan al volver a ejecutarlo; `--borrar` las elimina):
+   Opcional: carga el catálogo y cotizaciones de ejemplo para probar el CRM. `cargar_catalogo` solo crea lo
+   que falta y completa las fotos de los destinos, sin tocar lo editado en el CRM. Las cotizaciones de ejemplo
+   usan correos `@demo.quinana.test` y se reemplazan al volver a ejecutarlo; `--borrar` las elimina:
 
    ```bash
    python manage.py cargar_catalogo
@@ -156,7 +159,9 @@ python manage.py test tours accounts crm
 | `AuthApiTestCase` | Inicio de sesión, registro y cierre de sesión de los viajeros (`/api/auth/`) |
 | `StaffLoginApiTestCase` | Acceso del equipo: entra el personal con usuario; un viajero o una contraseña incorrecta no |
 | `CrmLoginRedirectTestCase` | Sin sesión, el CRUD envía al «Acceso del equipo»; `/login/` de Django ya no existe; cerrar sesión vuelve al acceso |
-| `PublicTourApiTestCase` | Catálogo público de solo lectura (`/api/tours/`) |
+| `PublicTourApiTestCase`, `PublicDestinationApiTestCase` | Catálogo público de solo lectura (`/api/tours/`, `/api/destinos/`), con los textos de los destinos que antes estaban fijos en el sitio |
+| `CategoriasTestCase` | Varias categorías por tour, ícono elegible (solo de la lista), slug generado y estable al renombrar, borrar una categoría no borra tours, categorías iniciales |
+| `CatalogoEnElCrmTestCase` | Lo editado en el CRM llega a la API: fotos (formato, descripción obligatoria, se borra la anterior), destinos, permisos, no se borra lo que está en uso y `cargar_catalogo` no pisa lo editado |
 | `PanelAccessTestCase` | El CRM es solo para el personal (403 amable para viajeros), menú con la sección activa y redirecciones de las rutas antiguas |
 | `SolicitudCotizacionApiTests` | Formulario del sitio: crea la cotización, valida, campo trampa, CSRF y límite de envíos |
 | `InicioMetricasTests` | Indicadores del periodo, avisos, calendario de viajes y coordenadas del SVG con punto decimal |

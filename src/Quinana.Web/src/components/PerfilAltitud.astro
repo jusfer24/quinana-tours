@@ -1,26 +1,31 @@
 ---
 // Perfil de altitud de Ecuador de oeste a este: Galápagos, Costa, Andes y Amazonía.
 // Cada punto es un enlace que filtra los tours de su región (data-region, ver HomePage).
+// Los nombres vienen de los destinos del CRM; la posición de cada parada es parte del dibujo,
+// así que solo aparecen los destinos que tienen una (por su nombre en español).
 // Escala vertical aproximada: nivel del mar en y=260, 6.000 m en y≈26 (0,039 px por metro).
 // La línea se dibuja al entrar en pantalla con la clase perfil-trazo (global.css).
 import { t, type Lang } from "../i18n/ui";
-import { regions } from "../lib/regions";
+import { type Destino, destinoText } from "../lib/tours";
 
 interface Props {
 	lang: Lang;
+	destinos: Destino[];
 }
 
-const { lang } = Astro.props;
+const { lang, destinos } = Astro.props;
 const text = t(lang).profile;
+const facts: Record<string, string> = text.facts;
 
 // Posición de cada región sobre el dibujo (coordenadas del viewBox 1200×300).
 // `side` indica dónde va la etiqueta respecto al punto.
-const stops = {
+const stops: Record<string, { x: number; y: number; side: "top" | "right" }> = {
 	Galápagos: { x: 95, y: 196, side: "top" },
 	Costa: { x: 420, y: 254, side: "top" },
 	Andes: { x: 722, y: 30, side: "right" },
 	Amazonía: { x: 1020, y: 251, side: "top" },
-} as const;
+};
+const paradas = destinos.filter((destino) => destino.name in stops);
 
 const meters = (m: number) => `${m.toLocaleString(lang === "es" ? "es-EC" : "en-US")} m`;
 const continent =
@@ -57,13 +62,14 @@ const islands = ["M40 260C60 245 75 200 95 196C115 200 125 240 150 260", "M168 2
 		<!-- Paradas: enlaces que filtran los tours de cada región -->
 		<ul>
 			{
-				regions.map((region) => {
-					const stop = stops[region.name];
+				paradas.map((destino) => {
+					const stop = stops[destino.name];
+					const label = destinoText(destino, lang).label;
 					return (
 						<li class="absolute" style={`left: ${(stop.x / 1200) * 100}%; top: ${(stop.y / 300) * 100}%`}>
 							<a
 								href="#tours"
-								data-region={region.name}
+								data-region={destino.name}
 								class="group absolute flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full p-2"
 							>
 								<span class="h-3.5 w-3.5 rounded-full border-[3px] border-white bg-terracota ring-1 ring-terracota transition-transform group-hover:scale-125" />
@@ -74,11 +80,11 @@ const islands = ["M40 260C60 245 75 200 95 196C115 200 125 240 150 260", "M168 2
 									]}
 								>
 									<span class="block font-display text-base font-bold text-selva group-hover:text-terracota md:text-lg">
-										{region.label[lang]}
+										{label}
 									</span>
-									<span class="block text-xs text-musgo">{text.facts[region.name]}</span>
+									{facts[destino.name] && <span class="block text-xs text-musgo">{facts[destino.name]}</span>}
 								</span>
-								<span class="sr-only sm:hidden">{region.label[lang]}</span>
+								<span class="sr-only sm:hidden">{label}</span>
 							</a>
 						</li>
 					);

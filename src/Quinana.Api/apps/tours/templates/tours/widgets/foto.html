@@ -1,0 +1,19 @@
+{% comment %}
+  Campo de foto del catálogo: una zona para hacer clic o soltar la foto (el input nativo queda oculto
+  y la zona es su etiqueta) y, si ya hay una foto, la casilla para quitarla. El nombre del archivo
+  y la vista previa los pone el script de crm/_formulario_catalogo.html.
+{% endcomment %}
+<div class="photo-input">
+  <label class="photo-drop" data-foto-zona>
+    <input type="{{ widget.type }}" name="{{ widget.name }}" class="photo-drop-input"{% for name, value in widget.attrs.items %}{% if name != "class" and value is not False %} {{ name }}{% if value is not True %}="{{ value|stringformat:'s' }}"{% endif %}{% endif %}{% endfor %}>
+    <svg class="photo-drop-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5M12 3v12"/></svg>
+    <span class="photo-drop-text"><strong>Elegir una foto</strong> o arrastrarla aquí</span>
+    <span class="photo-drop-file" data-foto-archivo>{% if widget.is_initial %}Se mantiene la foto actual{% else %}Ningún archivo seleccionado{% endif %}</span>
+  </label>
+  {% if widget.is_initial and not widget.required %}
+    <label class="check-inline" for="{{ widget.checkbox_id }}">
+      <input type="checkbox" name="{{ widget.checkbox_name }}" id="{{ widget.checkbox_id }}"{% if widget.attrs.disabled %} disabled{% endif %}>
+      {{ quitar_texto|default:"Quitar la foto actual" }}
+    </label>
+  {% endif %}
+</div>

@@ -1,28 +1,48 @@
 {% extends "crm/base_crm.html" %}
 
-{% block title %}{{ action }} · Quinana Tours{% endblock %}
+{% block title %}{% if object %}Editar «{{ object.title }}»{% else %}Nuevo tour{% endif %} · CRM Quinana Tours{% endblock %}
 
 {% block content %}
-  <div class="card card--narrow">
-    <h1>{{ action }}</h1>
+  <div class="card">
+    <a class="link back-link" href="{% url 'tour_list' %}">← Tours</a>
+    <h1>{% if object %}Editar tour{% else %}Nuevo tour{% endif %}</h1>
+    <p class="muted">Lo que guardes aquí es lo que ve el viajero en la tarjeta del tour, en la portada del sitio.</p>
 
-    <form method="post" class="form" novalidate>
+    <form method="post" enctype="multipart/form-data" class="form" novalidate>
       {% csrf_token %}
+      {% for error in form.non_field_errors %}<p class="field-error">{{ error }}</p>{% endfor %}
 
-      {% for field in form %}
-        <div class="field">
-          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-          {{ field }}
-          {% for error in field.errors %}
-            <p class="field-error">{{ error }}</p>
-          {% endfor %}
-        </div>
-      {% endfor %}
+      <div class="form-layout">
+        <fieldset class="form-section form-main">
+          <legend>Contenido de la tarjeta</legend>
+          <div class="form--grid form--trio">
+            <div class="form-span">{% include "crm/_campo.html" with field=form.title %}</div>
+            {% include "crm/_campo.html" with field=form.destination %}
+            {% include "crm/_campo.html" with field=form.duration_days %}
+            {% include "crm/_campo.html" with field=form.price_usd %}
+            <div class="form-span">{% include "crm/_campo.html" with field=form.categorias %}</div>
+            <div class="form-span">{% include "crm/_campo.html" with field=form.description %}</div>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section form-side">
+          <legend>Foto</legend>
+          <div class="photo-edit">
+            {% include "crm/_foto_actual.html" with foto=object.foto respaldo=object.destination.foto nota_respaldo="Este tour no tiene foto propia: el sitio usa la de su destino." %}
+            <div class="form">
+              {% include "crm/_campo.html" with field=form.foto %}
+              {% include "crm/_campo.html" with field=form.foto_alt %}
+            </div>
+          </div>
+        </fieldset>
+      </div>
 
       <div class="form-actions">
         <button type="submit" class="btn btn-primary">Guardar</button>
         <a href="{% url 'tour_list' %}" class="btn btn-secondary">Cancelar</a>
       </div>
+
+      {% include "crm/_formulario_catalogo.html" %}
     </form>
   </div>
 {% endblock %}

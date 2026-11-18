@@ -1,14 +1,14 @@
 ---
 // Página principal pública, compartida por / (español) y /en/ (inglés).
-// Los tours vienen del CRUD de Django (/api/tours/) y cada uno toma la foto de su región.
+// Los tours, destinos y categorías vienen del CRM (/api/tours/, /api/destinos/ y
+// /api/categorias/): un tour sin foto propia muestra la de su destino.
 // El filtro de tours y los puntos del perfil de altitud filtran en el navegador.
 import { Image } from "astro:assets";
 import banner from "../assets/destinos/cotopaxi-banner.jpg";
 import quilotoa from "../assets/quilotoa.jpg";
 import { t, type Lang } from "../i18n/ui";
 import Layout from "../layouts/Layout.astro";
-import { regionFor, regions } from "../lib/regions";
-import { fetchTours, formatPrice } from "../lib/tours";
+import { categoriaLabel, destinoText, fetchCategorias, fetchDestinos, fetchTours, formatPrice } from "../lib/tours";
 import PerfilAltitud from "./PerfilAltitud.astro";
 import QuoteForm from "./QuoteForm";
 
@@ -18,14 +18,18 @@ interface Props {
 
 const { lang } = Astro.props;
 const text = t(lang);
-const tours = await fetchTours();
+const [tours, destinos, todasLasCategorias] = await Promise.all([fetchTours(), fetchDestinos(), fetchCategorias()]);
+// En el filtro solo aparecen las categorías que tienen algún tour.
+const categorias = todasLasCategorias.filter((categoria) => tours.some((tour) => tour.categorias.includes(categoria.slug)));
+const categoriaPorSlug = new Map(todasLasCategorias.map((categoria) => [categoria.slug, categoria]));
+const destinoDe = (name: string) => destinos.find((destino) => destino.name === name);
 // Los tours solo existen en español: en /en/ se marcan con lang="es" para lectores de pantalla.
 const tourLang = lang === "es" ? undefined : "es";
 
-// Por región: cuántos tours hay y desde qué precio (datos reales del CRUD).
-const regionStats = regions.map((region) => {
-	const prices = tours.filter((tour) => tour.destination === region.name).map((tour) => Number(tour.price_usd));
-	return { ...region, count: prices.length, from: prices.length ? Math.min(...prices) : null };
+// Por destino: cuántos tours hay y desde qué precio.
+const regionStats = destinos.map((destino) => {
+	const prices = tours.filter((tour) => tour.destination === destino.name).map((tour) => Number(tour.price_usd));
+	return { ...destino, ...destinoText(destino, lang), count: prices.length, from: prices.length ? Math.min(...prices) : null };
 });
 
 const selectClass =
@@ -73,7 +77,7 @@ const selectClass =
 		</div>
 
 		<div class="mt-16 md:mt-20">
-			<PerfilAltitud lang={lang} />
+			<PerfilAltitud lang={lang} destinos={destinos} />
 		</div>
 
 		<ul class="mt-10 grid grid-cols-2 gap-x-5 gap-y-10 lg:grid-cols-4">
@@ -82,16 +86,19 @@ const selectClass =
 					<li>
 						<a href="#tours" data-region={region.name} class="group block">
 							<div class="aspect-[4/5] overflow-hidden rounded-xl bg-crema">
-								<Image
-									src={region.image}
-									alt={region.alt[lang]}
-									widths={[320, 560]}
-									sizes="(min-width: 1024px) 25vw, 50vw"
-									class="h-full w-full object-cover transition-transform duration-700 ease-[var(--ease-suave)] group-hover:scale-105"
-								/>
+								{region.foto && (
+									<Image
+										src={region.foto}
+										inferSize
+										alt={region.alt}
+										widths={[320, 560]}
+										sizes="(min-width: 1024px) 25vw, 50vw"
+										class="h-full w-full object-cover transition-transform duration-700 ease-[var(--ease-suave)] group-hover:scale-105"
+									/>
+								)}
 							</div>
-							<h3 class="mt-4 text-xl font-bold text-selva group-hover:text-terracota">{region.label[lang]}</h3>
-							<p class="mt-0.5 text-sm text-musgo">{region.tagline[lang]}</p>
+							<h3 class="mt-4 text-xl font-bold text-selva group-hover:text-terracota">{region.label}</h3>
+							{region.tagline && <p class="mt-0.5 text-sm text-musgo">{region.tagline}</p>}
 							<p class="mt-2 text-sm font-semibold text-tinta">
 								{region.count > 0 && region.from !== null
 									? `${text.profile.tours(region.count)}, ${text.profile.from} ${formatPrice(String(region.from))}`
@@ -114,11 +121,42 @@ const selectClass =
 		</div>
 
 		<form id="tour-search" class="mt-10 grid gap-4 border-y border-borde py-5 sm:grid-cols-3 lg:grid-cols-[1fr_1fr_1fr_auto] lg:items-end">
+			{
+				categorias.length > 0 && (
+					<fieldset class="sm:col-span-3 lg:col-span-4">
+						<legend class="text-xs font-semibold text-musgo">{text.tours.category}</legend>
+						<div class="mt-2 flex flex-wrap gap-2">
+							{[
+								{ slug: "", label: text.tours.anyCategory, svg: "" },
+								...categorias.map((c) => ({ slug: c.slug, label: categoriaLabel(c, lang), svg: c.icono_svg })),
+							].map((opcion) => (
+								<label class="inline-flex cursor-pointer items-center gap-2 rounded-full border border-borde bg-white px-4 py-2 text-sm font-semibold text-tinta transition-colors hover:border-selva has-[:checked]:border-selva has-[:checked]:bg-selva has-[:checked]:text-white has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-terracota has-[:focus-visible]:ring-offset-2">
+									<input type="radio" name="categoria" value={opcion.slug} checked={opcion.slug === ""} class="sr-only" />
+									{opcion.svg && (
+										<svg
+											class="h-4 w-4 shrink-0"
+											viewBox="0 0 24 24"
+											fill="none"
+											stroke="currentColor"
+											stroke-width="2"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											aria-hidden="true"
+											set:html={opcion.svg}
+										/>
+									)}
+									{opcion.label}
+								</label>
+							))}
+						</div>
+					</fieldset>
+				)
+			}
 			<label class="block text-xs font-semibold text-musgo">
 				{text.tours.destination}
 				<select name="destino" class={selectClass}>
 					<option value="">{text.tours.anyDestination}</option>
-					{regions.map((region) => <option value={region.name}>{region.label[lang]}</option>)}
+					{destinos.map((destino) => <option value={destino.name}>{destinoText(destino, lang).label}</option>)}
 				</select>
 			</label>
 			<label class="block text-xs font-semibold text-musgo">
@@ -151,29 +189,59 @@ const selectClass =
 			tours.length > 0 ? (
 				<ul id="tour-list" class="mt-10 grid gap-x-6 gap-y-12 md:grid-cols-2 lg:grid-cols-3">
 					{tours.map((tour) => {
-						const region = regionFor(tour.destination);
+						const destino = destinoDe(tour.destination);
+						// Foto propia del tour o, si no tiene, la de su destino (decorativa: alt vacío).
+						const foto = tour.foto ?? destino?.foto;
+						const alt = tour.foto ? tour.foto_alt : "";
 						return (
 							<li
 								data-tour
 								data-destino={tour.destination}
 								data-dias={tour.duration_days}
 								data-precio={tour.price_usd}
+								data-categorias={tour.categorias.join(" ")}
 								style={`view-transition-name: tour-${tour.id}`}
 								class="flex flex-col"
 							>
-								<div class="aspect-[3/2] overflow-hidden rounded-xl bg-crema">
-									{region && (
+								<div class="relative aspect-[3/2] overflow-hidden rounded-xl bg-crema">
+									{foto && (
 										<Image
-											src={region.image}
-											alt=""
+											src={foto}
+											inferSize
+											alt={alt}
 											widths={[400, 700]}
 											sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
 											class="h-full w-full object-cover"
 										/>
 									)}
+									{tour.categorias.length > 0 && (
+										<ul class="absolute top-3 left-3 flex flex-wrap gap-1.5" aria-label={text.tours.category}>
+											{tour.categorias.map((slug) => {
+												const categoria = categoriaPorSlug.get(slug);
+												return categoria && (
+													<li class="inline-flex items-center gap-1 rounded-full bg-white/92 px-2.5 py-1 text-xs font-semibold text-selva shadow-sm">
+														{categoria.icono_svg && (
+															<svg
+																class="h-3.5 w-3.5 shrink-0"
+																viewBox="0 0 24 24"
+																fill="none"
+																stroke="currentColor"
+																stroke-width="2.2"
+																stroke-linecap="round"
+																stroke-linejoin="round"
+																aria-hidden="true"
+																set:html={categoria.icono_svg}
+															/>
+														)}
+														{categoriaLabel(categoria, lang)}
+													</li>
+												);
+											})}
+										</ul>
+									)}
 								</div>
 								<p class="mt-4 flex gap-3 text-sm font-semibold">
-									<span class="text-terracota">{region ? region.label[lang] : tour.destination}</span>
+									<span class="text-terracota">{destino ? destinoText(destino, lang).label : tour.destination}</span>
 									<span class="text-musgo">{text.tours.days(tour.duration_days)}</span>
 								</p>
 								<h3 class="mt-1.5 text-xl leading-snug font-bold text-tinta" lang={tourLang}>
@@ -310,12 +378,14 @@ const selectClass =
 
 	function updateCards(): void {
 		const data = new FormData(form);
+		const categoria = String(data.get("categoria") ?? "");
 		const destino = String(data.get("destino") ?? "");
 		const duracion = String(data.get("duracion") ?? "");
 		const presupuesto = String(data.get("presupuesto") ?? "");
 		let visible = 0;
 		for (const card of cards) {
 			const match =
+				(!categoria || (card.dataset.categorias ?? "").split(" ").includes(categoria)) &&
 				(!destino || card.dataset.destino === destino) &&
 				inRange(Number(card.dataset.dias), duracion) &&
 				inRange(Number(card.dataset.precio), presupuesto);
@@ -324,7 +394,7 @@ const selectClass =
 		}
 		count.textContent = String(visible);
 		empty.hidden = visible > 0 || cards.length === 0;
-		clear.hidden = !destino && !duracion && !presupuesto;
+		clear.hidden = !categoria && !destino && !duracion && !presupuesto;
 	}
 
 	// Con View Transitions las tarjetas se reacomodan animadas; si no, cambian al instante.

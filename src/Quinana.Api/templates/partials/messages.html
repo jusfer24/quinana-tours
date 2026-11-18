@@ -1,7 +1,65 @@
+{% comment %}
+  Mensajes de Django.
+  - Éxito e información: aviso flotante abajo a la derecha (abajo al centro en móvil), que entra
+    con una animación y se cierra solo. Si el texto tiene dos líneas («Actualizado correctamente\n
+    Tour «X»»), la primera es el título y la segunda el detalle.
+  - Errores y advertencias: franja fija arriba del contenido, para que no desaparezcan solos.
+{% endcomment %}
 {% if messages %}
-  <ul class="messages">
+  {% for message in messages %}
+    {% if message.level >= 30 %}
+      <p class="alert alert--{{ message.tags }}" role="alert">{{ message }}</p>
+    {% endif %}
+  {% endfor %}
+
+  <div class="toasts" aria-live="polite">
     {% for message in messages %}
-      <li class="alert alert--{{ message.tags }}">{{ message }}</li>
+      {% if message.level < 30 %}
+        <div class="toast toast--{{ message.tags }}" role="status" data-toast>
+          <span class="toast-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path class="toast-check" pathLength="1" d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+          </span>
+          <p class="toast-text">{{ message }}</p>
+          <button type="button" class="toast-close" data-toast-close aria-label="Cerrar aviso">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+          </button>
+          <span class="toast-bar" aria-hidden="true"></span>
+        </div>
+      {% endif %}
     {% endfor %}
-  </ul>
+  </div>
+
+  <script>
+    // Cierra cada aviso a los 4,5 s (se pausa mientras el puntero o el foco están encima) o con la ×.
+    document.querySelectorAll("[data-toast]").forEach(function (toast) {
+      let restante = 4500;
+      let inicio = 0;
+      let reloj = null;
+
+      function cerrar() {
+        clearTimeout(reloj);
+        toast.classList.add("toast--saliendo");
+        toast.addEventListener("animationend", function () { toast.remove(); }, { once: true });
+        // Sin animaciones (movimiento reducido) no hay animationend: se quita igual.
+        setTimeout(function () { toast.remove(); }, 400);
+      }
+      function correr() {
+        inicio = Date.now();
+        toast.classList.remove("toast--pausa");
+        reloj = setTimeout(cerrar, restante);
+      }
+      function pausar() {
+        clearTimeout(reloj);
+        restante -= Date.now() - inicio;
+        toast.classList.add("toast--pausa");
+      }
+
+      toast.querySelector("[data-toast-close]").addEventListener("click", cerrar);
+      toast.addEventListener("mouseenter", pausar);
+      toast.addEventListener("mouseleave", correr);
+      toast.addEventListener("focusin", pausar);
+      toast.addEventListener("focusout", correr);
+      correr();
+    });
+  </script>
 {% endif %}

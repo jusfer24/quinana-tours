@@ -3,6 +3,12 @@ import { defineConfig, fontProviders } from 'astro/config';
 
 import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
+import { loadEnv } from 'vite';
+
+// Las fotos del catálogo se suben en el CRM y Django las sirve. Astro las descarga al compilar
+// y las optimiza como las locales (<Image/>), así que hay que autorizar el dominio de la API.
+const env = loadEnv(process.env.NODE_ENV ?? 'development', process.cwd(), '');
+const catalogApi = new URL(env.CATALOG_API_URL || env.PUBLIC_API_URL || 'http://localhost:8000');
 
 // https://astro.build/config
 export default defineConfig({
@@ -10,6 +16,14 @@ export default defineConfig({
   site: 'https://quinana-tours.pages.dev',
 
   integrations: [react()],
+
+  image: {
+    remotePatterns: [
+      { protocol: catalogApi.protocol.replace(':', ''), hostname: catalogApi.hostname },
+      { protocol: 'http', hostname: 'localhost' },
+      { protocol: 'http', hostname: '127.0.0.1' },
+    ],
+  },
 
   // Sitio bilingüe: español en la raíz (/) e inglés en /en/.
   i18n: {

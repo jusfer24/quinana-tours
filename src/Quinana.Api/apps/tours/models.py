@@ -25,11 +25,30 @@ from django.utils import timezone
 # ==========================================================
 
 class Destination(models.Model):
+    """Región del sitio público (sección «Destinos», filtro de tours y foto por defecto).
+
+    Todo lo que el sitio muestra de un destino se edita aquí, en los dos idiomas del sitio.
+    """
+
     name = models.CharField("nombre", max_length=100)
+    name_en = models.CharField("nombre en inglés", max_length=100, blank=True)
+    frase = models.CharField("frase", max_length=120, blank=True)
+    frase_en = models.CharField("frase en inglés", max_length=120, blank=True)
+
+    foto = models.ImageField("foto", upload_to="destinos/", blank=True)
+    foto_alt = models.CharField("descripción de la foto", max_length=250, blank=True)
+    foto_alt_en = models.CharField("descripción de la foto en inglés", max_length=250, blank=True)
+    # Las fotos con licencia CC exigen dar crédito: el sitio lo muestra en el pie de página.
+    credito_tema = models.CharField("qué muestra la foto", max_length=100, blank=True)
+    credito_autor = models.CharField("autor de la foto", max_length=100, blank=True)
+    credito_licencia = models.CharField("licencia", max_length=50, blank=True)
+    credito_url = models.URLField("enlace a la foto original", max_length=500, blank=True)
+
+    orden = models.PositiveSmallIntegerField("orden en el sitio", default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ["name"]
+        ordering = ["orden", "name"]
         verbose_name = "destino"
         verbose_name_plural = "destinos"
         constraints = [
@@ -42,22 +61,41 @@ class Destination(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def tiene_credito(self):
+        return bool(self.credito_autor and self.credito_url)
+
 
 # ==========================================================
 # 2. CATEGORIA
 # ==========================================================
 
 class Categoria(models.Model):
+    """Tipo de viaje (Aventura, Cultura, Playa…). Filtra los tours en el sitio público.
+
+    `slug` es la clave del filtro en el sitio; el CRM lo genera a partir del nombre.
+    """
+
     nombre = models.CharField("nombre", max_length=100)
+    nombre_en = models.CharField("nombre en inglés", max_length=100, blank=True)
     slug = models.SlugField("slug", max_length=120, unique=True)
+    # Clave de tours/iconos.py. Sin `choices` en el modelo: sumar un ícono no pide migración.
+    icono = models.CharField("ícono", max_length=30, blank=True)
+    orden = models.PositiveSmallIntegerField("orden en el sitio", default=0)
 
     class Meta:
-        ordering = ["nombre"]
+        ordering = ["orden", "nombre"]
         verbose_name = "categoría"
         verbose_name_plural = "categorías"
 
     def __str__(self):
         return self.nombre
+
+    @property
+    def icono_svg(self):
+        from .iconos import trazo
+
+        return trazo(self.icono)
 
 
 # ==========================================================
@@ -81,12 +119,11 @@ class Tour(models.Model):
         related_name="tours",
     )
 
-    categoria = models.ForeignKey(
+    # Un tour puede ser de varios tipos (p. ej. Naturaleza y Aventura).
+    categorias = models.ManyToManyField(
         Categoria,
-        on_delete=models.PROTECT,
         related_name="tours",
-        verbose_name="categoría",
-        null=True,
+        verbose_name="categorías",
         blank=True,
     )
 
@@ -122,6 +159,10 @@ class Tour(models.Model):
             MaxValueValidator(MAX_PRICE_USD),
         ],
     )
+
+    # Foto de la tarjeta en el sitio. Sin foto, el sitio usa la de su destino.
+    foto = models.ImageField("foto", upload_to="tours/", blank=True)
+    foto_alt = models.CharField("descripción de la foto", max_length=250, blank=True)
 
     seo_title = models.CharField(
         "título SEO",
@@ -169,6 +210,11 @@ class Tour(models.Model):
     def duration_label(self):
         days = self.duration_days
         return f"{days} día" if days == 1 else f"{days} días"
+
+    @property
+    def foto_visible(self):
+        """La foto que muestra la tarjeta del sitio: la del tour o, si no tiene, la del destino."""
+        return self.foto or self.destination.foto
 
 
 # ==========================================================

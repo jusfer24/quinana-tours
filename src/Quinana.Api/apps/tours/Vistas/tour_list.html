@@ -1,44 +1,61 @@
 {% extends "crm/base_crm.html" %}
+{% comment %}
+  Catálogo de tours: cada tarjeta muestra lo mismo que la tarjeta del sitio público (foto, destino,
+  duración, título, descripción y precio), en el mismo orden que la portada.
+{% endcomment %}
 
-{% block title %}Catálogo de tours · Quinana Tours{% endblock %}
+{% block title %}Tours · CRM Quinana Tours{% endblock %}
 
 {% block content %}
   <div class="card">
     <div class="card-header">
-      <h1>Catálogo de experiencias</h1>
-      {% if perms.tours.add_tour %}<a href="{% url 'tour_create' %}" class="btn btn-primary">+ Nuevo tour</a>{% endif %}
+      <div>
+        <h1>Tours</h1>
+        <p class="muted muted--tight">
+          {{ tours|length }} tour{{ tours|length|pluralize }} en el sitio público, en el mismo orden que la portada.
+        </p>
+      </div>
+      <div class="header-actions">
+        <a class="btn btn-secondary" href="{{ frontend_url }}#tours" target="_blank" rel="noopener">
+          Ver en el sitio {% include "crm/_icono.html" with nombre="externo" %}
+        </a>
+        {% if perms.tours.add_tour %}<a href="{% url 'tour_create' %}" class="btn btn-primary">+ Nuevo tour</a>{% endif %}
+      </div>
     </div>
 
-    <div class="table-wrapper">
-      <table class="table">
-        <thead>
-          <tr>
-            <th scope="col">Título</th>
-            <th scope="col">Destino</th>
-            <th scope="col">Duración</th>
-            <th scope="col">Precio (USD)</th>
-            <th scope="col">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for tour in tours %}
-            <tr>
-              <td>{{ tour.title }}</td>
-              <td>{{ tour.destination }}</td>
-              <td>{{ tour.duration_label }}</td>
-              <td>Desde ${{ tour.price_usd }} USD / persona</td>
-              <td class="actions">
+    {% if tours %}
+      <ul class="catalog-grid">
+        {% for tour in tours %}
+          <li class="catalog-card">
+            <div class="catalog-card-img">
+              {% with foto=tour.foto_visible %}
+                {% if foto %}<img src="{{ foto.url }}" alt="" loading="lazy" width="480" height="320">{% endif %}
+              {% endwith %}
+              {% if not tour.foto %}<span class="catalog-card-tag">Foto del destino</span>{% endif %}
+              {% if tour.categorias.all %}
+                <ul class="catalog-card-cats" aria-label="Tipo de viaje">
+                  {% for categoria in tour.categorias.all %}<li>{% if categoria.icono %}<svg class="cat-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{{ categoria.icono_svg }}</svg>{% endif %}{{ categoria.nombre }}</li>{% endfor %}
+                </ul>
+              {% endif %}
+            </div>
+            <p class="catalog-card-meta">
+              <span class="catalog-card-dest">{{ tour.destination }}</span>
+              <span>{{ tour.duration_label }}</span>
+            </p>
+            <h2 class="catalog-card-title">{{ tour.title }}</h2>
+            <p class="catalog-card-desc">{{ tour.description }}</p>
+            <div class="catalog-card-foot">
+              <p class="catalog-card-price"><strong>${{ tour.price_usd|floatformat:"0g" }}</strong> por persona</p>
+              <p class="actions">
                 {% if perms.tours.change_tour %}<a href="{% url 'tour_update' tour.pk %}" class="link">Editar</a>{% endif %}
                 {% if perms.tours.delete_tour %}<a href="{% url 'tour_delete' tour.pk %}" class="link link--danger">Eliminar</a>{% endif %}
-              </td>
-            </tr>
-          {% empty %}
-            <tr>
-              <td colspan="5" class="empty">No hay tours registrados.</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+              </p>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty">No hay tours registrados.</p>
+    {% endif %}
   </div>
 {% endblock %}

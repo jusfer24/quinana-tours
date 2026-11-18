@@ -1,0 +1,21 @@
+---
+// Hoja decorativa que se mece (clase anim-mecer en global.css).
+interface Props {
+	class?: string;
+	delay?: number;
+}
+
+const { class: className = "", delay = 0 } = Astro.props;
+---
+
+<svg
+	class:list={["anim-mecer pointer-events-none", className]}
+	style={`--d: ${delay}ms`}
+	viewBox="0 0 60 90"
+	aria-hidden="true"
+>
+	<path d="M30 88V30" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"></path>
+	<path d="M30 60C14 58 6 46 8 30c14 2 22 12 22 30z" fill="currentColor" opacity=".85"></path>
+	<path d="M30 46c16-2 24-14 22-30-14 2-22 12-22 30z" fill="currentColor" opacity=".7"></path>
+	<path d="M30 30C22 24 20 14 24 4c8 6 10 16 6 26z" fill="currentColor" opacity=".55"></path>
+</svg>

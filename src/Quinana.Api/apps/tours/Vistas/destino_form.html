@@ -1,0 +1,56 @@
+{% extends "crm/base_crm.html" %}
+
+{% block title %}{% if object %}Editar «{{ object.name }}»{% else %}Nuevo destino{% endif %} · CRM Quinana Tours{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <a class="link back-link" href="{% url 'destino_list' %}">← Destinos</a>
+    <h1>{% if object %}Editar destino{% else %}Nuevo destino{% endif %}</h1>
+    <p class="muted">Se muestra en la sección «Destinos» del sitio, en el filtro de tours y en el pie de página, en español e inglés.</p>
+
+    <form method="post" enctype="multipart/form-data" class="form" novalidate>
+      {% csrf_token %}
+      {% for error in form.non_field_errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+
+      <div class="form-layout">
+        <div class="form-main">
+          <fieldset class="form-section">
+            <legend>Nombre y frase</legend>
+            <div class="form--grid form--pairs">
+              {% include "crm/_campo.html" with field=form.name %}
+              {% include "crm/_campo.html" with field=form.name_en %}
+              {% include "crm/_campo.html" with field=form.frase %}
+              {% include "crm/_campo.html" with field=form.frase_en %}
+            </div>
+          </fieldset>
+
+          <fieldset class="form-section">
+            <legend>Posición</legend>
+            <div class="form--grid form--pairs">
+              {% include "crm/_campo.html" with field=form.orden %}
+            </div>
+          </fieldset>
+        </div>
+
+        <fieldset class="form-section form-side">
+          <legend>Foto</legend>
+          <div class="photo-edit">
+            {% include "crm/_foto_actual.html" with foto=object.foto %}
+            <div class="form">
+              {% include "crm/_campo.html" with field=form.foto %}
+              {% include "crm/_campo.html" with field=form.foto_alt %}
+              {% include "crm/_campo.html" with field=form.foto_alt_en %}
+            </div>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <a href="{% url 'destino_list' %}" class="btn btn-secondary">Cancelar</a>
+      </div>
+
+      {% include "crm/_formulario_catalogo.html" %}
+    </form>
+  </div>
+{% endblock %}

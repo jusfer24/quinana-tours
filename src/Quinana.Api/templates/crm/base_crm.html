@@ -51,14 +51,14 @@
             </a>
           </li>
           <li>
-            <span class="crm-nav-link crm-nav-link--soon" aria-disabled="true" title="Destinos">
+            <a class="crm-nav-link" href="{% url 'destino_list' %}" title="Destinos"{% if seccion == "destinos" %} aria-current="page"{% endif %}>
               {% include "crm/_icono.html" with nombre="destinos" %}<span class="crm-nav-label">Destinos</span>
-            </span>
+            </a>
           </li>
           <li>
-            <span class="crm-nav-link crm-nav-link--soon" aria-disabled="true" title="Categorías">
+            <a class="crm-nav-link" href="{% url 'categoria_list' %}" title="Categorías"{% if seccion == "categorias" %} aria-current="page"{% endif %}>
               {% include "crm/_icono.html" with nombre="categorias" %}<span class="crm-nav-label">Categorías</span>
-            </span>
+            </a>
           </li>
 
           <li class="crm-nav-group" aria-hidden="true"><span class="crm-nav-label">Administración</span></li>

@@ -192,6 +192,11 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'  # salida de collectstatic (ignorada en git)
+# Fotos que sube el equipo desde el CRM (destinos y tours). En local se guardan en media/
+# y Django las sirve con DEBUG. En producción hace falta un almacenamiento externo:
+# el disco de Render se borra en cada despliegue.
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 STORAGES = {
     'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
     'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage'},

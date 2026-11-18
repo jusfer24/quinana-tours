@@ -1,0 +1,131 @@
+{% comment %}
+  Comportamiento de los formularios del catálogo (tour y destino). Se incluye dentro del
+  <form data-catalogo>.
+  - Foto: la zona acepta clic o arrastrar; muestra el nombre del archivo y una vista previa.
+  - Al editar (hay `object`), pide confirmar antes de guardar y lista lo que cambió, porque
+    lo guardado es lo que ve el viajero. Si no cambió nada, guarda sin preguntar.
+{% endcomment %}
+{% if object %}
+  <dialog class="confirm-dialog" id="confirmar-cambios" aria-labelledby="confirmar-titulo">
+    <h2 id="confirmar-titulo">¿Guardar los cambios?</h2>
+    <p>Lo que guardes es lo que verán los viajeros en el sitio público.</p>
+    <p class="confirm-dialog-sub">Cambiaste:</p>
+    <ul class="confirm-dialog-list" data-cambios></ul>
+    <div class="form-actions">
+      <button type="button" class="btn btn-primary" data-confirmar>Sí, guardar</button>
+      <button type="button" class="btn btn-secondary" data-cancelar>Seguir editando</button>
+    </div>
+  </dialog>
+{% endif %}
+
+<script>
+  (function () {
+    const form = document.currentScript.closest("form");
+
+    // ---------- Foto: nombre del archivo, vista previa y arrastrar y soltar ----------
+    const figura = form.querySelector(".photo-current");
+    const figuraInicial = figura ? figura.innerHTML : "";
+
+    form.querySelectorAll("[data-foto-zona]").forEach(function (zona) {
+      const input = zona.querySelector("input[type=file]");
+      const nombre = zona.querySelector("[data-foto-archivo]");
+      const nombreInicial = nombre.textContent;
+      let vistaPrevia = null;
+
+      function mostrar() {
+        const archivo = input.files[0];
+        if (vistaPrevia) URL.revokeObjectURL(vistaPrevia);
+        vistaPrevia = null;
+        zona.classList.toggle("photo-drop--lista", Boolean(archivo));
+        if (!archivo) {
+          nombre.textContent = nombreInicial;
+          if (figura) figura.innerHTML = figuraInicial;
+          return;
+        }
+        const mb = (archivo.size / 1024 / 1024).toFixed(1).replace(".", ",");
+        nombre.textContent = archivo.name + " · " + mb + " MB";
+        if (figura && archivo.type.startsWith("image/")) {
+          vistaPrevia = URL.createObjectURL(archivo);
+          const img = document.createElement("img");
+          img.src = vistaPrevia;
+          img.alt = "";
+          const pie = document.createElement("figcaption");
+          pie.textContent = "Vista previa: así se verá al guardar.";
+          figura.replaceChildren(img, pie);
+        }
+      }
+
+      input.addEventListener("change", mostrar);
+      zona.addEventListener("dragover", function (e) {
+        e.preventDefault();
+        zona.classList.add("photo-drop--encima");
+      });
+      zona.addEventListener("dragleave", function () {
+        zona.classList.remove("photo-drop--encima");
+      });
+      zona.addEventListener("drop", function (e) {
+        e.preventDefault();
+        zona.classList.remove("photo-drop--encima");
+        const archivo = e.dataTransfer.files[0];
+        if (!archivo) return;
+        const lista = new DataTransfer();
+        lista.items.add(archivo);
+        input.files = lista.files;
+        mostrar();
+      });
+    });
+
+    // ---------- Confirmar antes de guardar los cambios ----------
+    const dialogo = document.getElementById("confirmar-cambios");
+    if (!dialogo) return;
+
+    function valores() {
+      const mapa = new Map();
+      for (const el of form.elements) {
+        if (!el.name || el.name === "csrfmiddlewaretoken") continue;
+        if (el.type === "file") mapa.set(el.name, Array.from(el.files, function (f) { return f.name; }).join());
+        else if (el.type === "checkbox") mapa.set(el.name, el.checked);
+        else mapa.set(el.name, el.value);
+      }
+      return mapa;
+    }
+
+    function nombreDelCampo(el) {
+      if (el.type === "file" || el.name.endsWith("-clear")) return "Foto";
+      const etiqueta = el.closest(".field") && el.closest(".field").querySelector(":scope > label");
+      return etiqueta ? etiqueta.textContent.trim() : el.name;
+    }
+
+    const iniciales = valores();
+    let confirmado = false;
+
+    form.addEventListener("submit", function (e) {
+      if (confirmado) return;
+      const actuales = valores();
+      const cambios = [];
+      for (const el of form.elements) {
+        if (!actuales.has(el.name) || actuales.get(el.name) === iniciales.get(el.name)) continue;
+        const nombre = nombreDelCampo(el);
+        if (!cambios.includes(nombre)) cambios.push(nombre);
+      }
+      if (!cambios.length) return;
+
+      e.preventDefault();
+      dialogo.querySelector("[data-cambios]").replaceChildren(...cambios.map(function (texto) {
+        const li = document.createElement("li");
+        li.textContent = texto;
+        return li;
+      }));
+      dialogo.showModal();
+    });
+
+    dialogo.querySelector("[data-confirmar]").addEventListener("click", function () {
+      confirmado = true;
+      dialogo.close();
+      form.requestSubmit();
+    });
+    dialogo.querySelector("[data-cancelar]").addEventListener("click", function () {
+      dialogo.close();
+    });
+  })();
+</script>

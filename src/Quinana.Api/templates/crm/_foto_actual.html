@@ -1,0 +1,16 @@
+{% comment %}
+  La foto que muestra hoy el sitio. Recibe `foto` (puede estar vacía) y, opcionales,
+  `respaldo` (la que el sitio usa si no hay foto) y `nota_respaldo`.
+{% endcomment %}
+<figure class="photo-current">
+  {% if foto %}
+    <img src="{{ foto.url }}" alt="" width="480" height="320">
+    <figcaption>Foto actual en el sitio.</figcaption>
+  {% elif respaldo %}
+    <img src="{{ respaldo.url }}" alt="" width="480" height="320">
+    <figcaption>{{ nota_respaldo }}</figcaption>
+  {% else %}
+    <div class="photo-current-empty" aria-hidden="true">Sin foto</div>
+    <figcaption>Todavía no hay foto.</figcaption>
+  {% endif %}
+</figure>

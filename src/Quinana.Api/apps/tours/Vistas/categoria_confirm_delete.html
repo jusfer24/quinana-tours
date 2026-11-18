@@ -1,0 +1,19 @@
+{% extends "crm/base_crm.html" %}
+
+{% block title %}Eliminar categoría · CRM Quinana Tours{% endblock %}
+
+{% block content %}
+  <div class="card card--narrow card--center">
+    <h1>Confirmar eliminación</h1>
+    <p class="muted">
+      ¿Seguro que deseas eliminar la categoría <strong>«{{ categoria.nombre }}»</strong>?
+      {% with n=categoria.tours.count %}{% if n %}Se quitará de {{ n }} tour{{ n|pluralize }}; los tours no se borran.{% else %}Ningún tour la usa.{% endif %}{% endwith %}
+    </p>
+
+    <form method="post" class="form-actions form-actions--center">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+      <a href="{% url 'categoria_list' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+  </div>
+{% endblock %}

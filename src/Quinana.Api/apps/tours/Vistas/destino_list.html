@@ -1,0 +1,50 @@
+{% extends "crm/base_crm.html" %}
+{% comment %}
+  Destinos: las regiones de la sección «Destinos» del sitio, en el mismo orden.
+  Su foto también es la de los tours que no tienen una propia.
+{% endcomment %}
+
+{% block title %}Destinos · CRM Quinana Tours{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h1>Destinos</h1>
+        <p class="muted muted--tight">Las regiones de la sección «Destinos» del sitio, en el mismo orden. Su foto es también la de los tours sin foto propia.</p>
+      </div>
+      <div class="header-actions">
+        <a class="btn btn-secondary" href="{{ frontend_url }}#destinos" target="_blank" rel="noopener">
+          Ver en el sitio {% include "crm/_icono.html" with nombre="externo" %}
+        </a>
+        {% if perms.tours.add_destination %}<a href="{% url 'destino_create' %}" class="btn btn-primary">+ Nuevo destino</a>{% endif %}
+      </div>
+    </div>
+
+    {% if destinos %}
+      <ul class="catalog-grid catalog-grid--destinos">
+        {% for destino in destinos %}
+          <li class="catalog-card">
+            <div class="catalog-card-img catalog-card-img--tall">
+              {% if destino.foto %}<img src="{{ destino.foto.url }}" alt="" loading="lazy" width="400" height="500">{% endif %}
+            </div>
+            <h2 class="catalog-card-title">{{ destino.name }}{% if destino.name_en and destino.name_en != destino.name %} <span class="catalog-card-en" lang="en">· {{ destino.name_en }}</span>{% endif %}</h2>
+            <p class="catalog-card-desc">
+              {{ destino.frase|default:"Sin frase" }}
+              {% if destino.frase_en %}<span class="cell-sub" lang="en">{{ destino.frase_en }}</span>{% endif %}
+            </p>
+            <div class="catalog-card-foot">
+              <p class="catalog-card-price">{{ destino.num_tours }} tour{{ destino.num_tours|pluralize }}</p>
+              <p class="actions">
+                {% if perms.tours.change_destination %}<a href="{% url 'destino_update' destino.pk %}" class="link">Editar</a>{% endif %}
+                {% if perms.tours.delete_destination and not destino.num_tours %}<a href="{% url 'destino_delete' destino.pk %}" class="link link--danger">Eliminar</a>{% endif %}
+              </p>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty">No hay destinos registrados.</p>
+    {% endif %}
+  </div>
+{% endblock %}
