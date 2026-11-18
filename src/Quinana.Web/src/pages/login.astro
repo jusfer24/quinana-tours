@@ -6,9 +6,46 @@ import RegisterForm from "../components/RegisterForm.astro";
 import StaffLoginForm from "../components/StaffLoginForm.astro";
 import TermsDialog from "../components/TermsDialog.astro";
 import "../styles/auth.css";
-// Foto: Omri D. Cohen en Unsplash (https://unsplash.com/photos/MzeSloMrFTY).
-// Licencia Unsplash: uso comercial gratuito, sin atribución obligatoria.
-import quilotoa from "../assets/quilotoa.jpg";
+// Galería de la tarjeta (y del fondo desenfocado). Fotos con licencia Unsplash:
+// uso comercial gratuito, sin atribución obligatoria.
+// - Quilotoa: Robinson Recalde (https://unsplash.com/photos/ifR_v_GWliQ)
+// - Baños: Andres Medina (https://unsplash.com/photos/F26TDHAk-1w)
+// - Galápagos: Heidi Bruce (https://unsplash.com/photos/LJIjXgutX4g)
+// - Cuyabeno: https://unsplash.com/photos/-yRBdN28AVU
+import quilotoa from "../assets/acceso/quilotoa-laguna.jpg";
+import cotopaxi from "../assets/destinos/cotopaxi-banner.jpg";
+import banos from "../assets/acceso/banos-montanas.jpg";
+import galapagos from "../assets/acceso/galapagos-bartolome.jpg";
+import cuyabeno from "../assets/acceso/cuyabeno-mono.jpg";
+
+// Cada foto se muestra 4 s; la duración total del ciclo se calcula en CSS con --slides.
+const slides = [
+	{
+		src: quilotoa,
+		place: "Laguna del Quilotoa, Ecuador",
+		alt: "Laguna del Quilotoa, un lago de cráter turquesa rodeado de montañas en los Andes de Ecuador",
+	},
+	{
+		src: cotopaxi,
+		place: "Volcán Cotopaxi, Ecuador",
+		alt: "Volcán Cotopaxi con la cumbre nevada entre nubes sobre el páramo andino",
+	},
+	{
+		src: galapagos,
+		place: "Isla Bartolomé, Galápagos",
+		alt: "Vista de la Isla Bartolomé con sus dos playas de arena y la roca Pináculo en Galápagos",
+	},
+	{
+		src: banos,
+		place: "Baños de Agua Santa, Ecuador",
+		alt: "Valle verde de Baños de Agua Santa rodeado de montañas cubiertas de nubes",
+	},
+	{
+		src: cuyabeno,
+		place: "Reserva Cuyabeno, Amazonía",
+		alt: "Mono capuchino de frente blanca mirando a la cámara en la Reserva Cuyabeno",
+	},
+];
 ---
 
 <!doctype html>
@@ -24,6 +61,28 @@ import quilotoa from "../assets/quilotoa.jpg";
 	</head>
 	<body>
 		<main class="access-page" data-view="welcome">
+			<!-- Fondo decorativo: la misma galería, desenfocada y sincronizada con la tarjeta.
+			     Usa el ancho de 800 px, que la foto de la tarjeta también usa en escritorio,
+			     así el navegador descarga cada imagen una sola vez. -->
+			<div class="backdrop" aria-hidden="true" style={`--slides: ${slides.length}`}>
+				<div class="backdrop-track">
+					{
+						slides.map((slide, i) => (
+							<Image
+								src={slide.src}
+								alt=""
+								class="backdrop-img slide"
+								style={`--i: ${i}`}
+								widths={[800]}
+								sizes="100vw"
+								loading={i === 0 ? "eager" : "lazy"}
+								decoding="async"
+							/>
+						))
+					}
+				</div>
+			</div>
+
 			<!-- Marca: arriba a la izquierda, fuera de la tarjeta -->
 			<a href="/" class="brand">Quinana Tours</a>
 
@@ -106,23 +165,37 @@ import quilotoa from "../assets/quilotoa.jpg";
 				</div>
 
 				<!-- Columna de la foto -->
-				<figure class="photo">
-					<Image
-						src={quilotoa}
-						alt="Laguna del Quilotoa, un lago de cráter turquesa rodeado de montañas en los Andes de Ecuador"
-						class="photo-img"
-						widths={[480, 800, 1200]}
-						sizes="(min-width: 960px) 55vw, 100vw"
-						loading="eager"
-						fetchpriority="high"
-					/>
+				<!-- Galería en bucle (solo CSS): cada foto entra con un fundido y un zoom lento. -->
+				<figure class="photo" style={`--slides: ${slides.length}`}>
+					{
+						slides.map((slide, i) => (
+							<Image
+								src={slide.src}
+								alt={slide.alt}
+								class="photo-img slide"
+								style={`--i: ${i}`}
+								widths={[480, 800, 1200]}
+								sizes="(min-width: 960px) 55vw, 100vw"
+								loading={i === 0 ? "eager" : "lazy"}
+								fetchpriority={i === 0 ? "high" : "auto"}
+							/>
+						))
+					}
 					<div class="photo-card">
 						<p class="photo-card-title">Tours a tu medida</p>
 						<p class="photo-card-text">Tú eliges fechas y actividades; nosotros armamos el itinerario.</p>
 					</div>
 					<figcaption class="photo-caption">
 						<p class="photo-slogan">Tu próxima aventura empieza aquí</p>
-						<span class="photo-place">Laguna del Quilotoa, Ecuador</span>
+						<span class="photo-places">
+							{
+								slides.map((slide, i) => (
+									<span class="photo-place slide" style={`--i: ${i}`}>
+										{slide.place}
+									</span>
+								))
+							}
+						</span>
 					</figcaption>
 				</figure>
 			</div>
@@ -234,10 +307,15 @@ import quilotoa from "../assets/quilotoa.jpg";
 		--color-focus-ring: rgba(46, 90, 63, 0.35);
 		--color-error: #b42318;
 		/* Vidrio: opacidad alta para que se vea elegante sin perder legibilidad. */
-		--glass-strong: rgba(255, 255, 255, 0.85);
 		--glass-soft: rgba(255, 255, 255, 0.78);
 		--glass-border: rgba(255, 255, 255, 0.6);
 		--glass-blur: blur(22px) saturate(160%);
+		/* Tarjeta central: marco de vidrio translúcido y panel esmerilado para el formulario. */
+		--glass-frame: rgba(255, 255, 255, 0.16);
+		--glass-frame-border: rgba(255, 255, 255, 0.38);
+		--glass-frame-blur: blur(24px) saturate(150%);
+		--glass-panel: rgba(255, 255, 255, 0.78);
+		--glass-panel-border: rgba(255, 255, 255, 0.55);
 	}
 
 	html,
@@ -274,6 +352,100 @@ import quilotoa from "../assets/quilotoa.jpg";
 			radial-gradient(ellipse 55% 45% at 90% 95%, var(--color-page-light), transparent 70%),
 			linear-gradient(155deg, var(--color-page) 0%, var(--color-page-deep) 100%);
 		background-attachment: fixed;
+		isolation: isolate; /* el fondo con z-index -1 queda dentro de la página */
+	}
+
+	/* ---------- Galería en bucle ----------
+	   Las fotos de la tarjeta, los nombres de lugar y el fondo comparten el mismo
+	   ritmo: cada foto se ve 4 s y se funde con la siguiente durante 1 s. Todas
+	   arrancan juntas al cargar, así que el fondo siempre acompaña a la tarjeta.
+	   Los porcentajes de los @keyframes asumen 5 fotos (cada una ocupa 20 % del ciclo,
+	   el fundido 5 %); si cambia el número de fotos, hay que ajustarlos. */
+	.slide {
+		--slide-time: 4s;
+		--fade-time: 1s;
+		opacity: 0;
+		animation-duration: calc(var(--slides) * var(--slide-time));
+		/* La primera foto arranca ya visible (sin fundido inicial). */
+		animation-delay: calc(var(--i) * var(--slide-time) - var(--fade-time));
+		animation-timing-function: ease-in-out;
+		animation-iteration-count: infinite;
+		animation-fill-mode: backwards;
+	}
+
+	@keyframes slide-fade {
+		0% {
+			opacity: 0;
+		}
+		5%,
+		20% {
+			opacity: 1;
+		}
+		25%,
+		100% {
+			opacity: 0;
+		}
+	}
+
+	/* Igual que slide-fade, con un acercamiento lento mientras la foto está visible. */
+	@keyframes slide-ken-burns {
+		0% {
+			opacity: 0;
+			transform: scale(1);
+		}
+		5% {
+			opacity: 1;
+		}
+		20% {
+			opacity: 1;
+		}
+		25%,
+		100% {
+			opacity: 0;
+			transform: scale(1.1);
+		}
+	}
+
+	/* Fondo: la galería con desenfoque leve; el degradado verde de arriba queda
+	   como respaldo mientras carga. */
+	.backdrop {
+		position: fixed;
+		inset: 0;
+		z-index: -1;
+		overflow: hidden;
+		pointer-events: none;
+	}
+
+	/* Paneo lento de todo el fondo, independiente del cambio de foto. */
+	.backdrop-track {
+		position: absolute;
+		inset: 0;
+		transform: scale(1.06); /* evita el borde claro que deja el desenfoque */
+		animation: backdrop-drift 40s ease-in-out infinite alternate;
+	}
+
+	@keyframes backdrop-drift {
+		to {
+			transform: scale(1.14) translate(-2%, -1.5%);
+		}
+	}
+
+	.backdrop-img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		filter: blur(8px);
+		animation-name: slide-fade;
+	}
+
+	/* Velo verde oscuro: une la foto con la paleta y hace resaltar la marca y la tarjeta. */
+	.backdrop::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(160deg, rgba(11, 53, 51, 0.25) 0%, rgba(11, 53, 51, 0.5) 100%);
 	}
 
 	/* Marca fija en la esquina superior izquierda. */
@@ -287,7 +459,9 @@ import quilotoa from "../assets/quilotoa.jpg";
 		text-transform: uppercase;
 		color: #fff;
 		text-decoration: none;
-		text-shadow: 0 1px 8px rgba(0, 0, 0, 0.3);
+		text-shadow:
+			0 1px 2px rgba(0, 0, 0, 0.35),
+			0 2px 14px rgba(0, 0, 0, 0.45);
 	}
 
 	.brand:focus-visible {
@@ -296,25 +470,66 @@ import quilotoa from "../assets/quilotoa.jpg";
 		border-radius: 2px;
 	}
 
-	/* Tarjeta de vidrio esmerilado que contiene contenido y foto. */
+	/* Tarjeta de vidrio (glassmorphism): deja ver el fondo desenfocado a través del marco. */
 	.frame {
 		box-sizing: border-box;
+		position: relative;
+		isolation: isolate;
+		overflow: hidden;
 		display: flex;
 		flex-direction: column-reverse; /* en móvil la foto queda arriba */
+		gap: 0.6rem;
 		width: 100%;
 		padding: 0.6rem;
-		background: var(--glass-strong);
-		backdrop-filter: var(--glass-blur);
-		-webkit-backdrop-filter: var(--glass-blur);
-		border: 1px solid var(--glass-border);
+		background: linear-gradient(135deg, rgba(255, 255, 255, 0.24), var(--glass-frame) 60%);
+		backdrop-filter: var(--glass-frame-blur);
+		-webkit-backdrop-filter: var(--glass-frame-blur);
+		border: 1px solid var(--glass-frame-border);
 		border-radius: 1.5rem;
-		box-shadow: 0 30px 70px rgba(0, 0, 0, 0.3);
+		box-shadow:
+			0 30px 70px rgba(0, 0, 0, 0.3),
+			inset 0 1px 0 rgba(255, 255, 255, 0.45); /* brillo en el borde superior */
 	}
 
+	/* Destello de luz que recorre el vidrio cada pocos segundos; queda detrás del
+	   panel y de la foto, así que solo se ve en el marco. */
+	.frame::before {
+		content: "";
+		position: absolute;
+		inset: -50% auto -50% -60%;
+		z-index: 0;
+		width: 45%;
+		background: linear-gradient(
+			100deg,
+			transparent 0%,
+			rgba(255, 255, 255, 0.35) 50%,
+			transparent 100%
+		);
+		transform: translateX(0) rotate(12deg);
+		animation: glass-shine 9s ease-in-out infinite;
+		pointer-events: none;
+	}
+
+	@keyframes glass-shine {
+		0%,
+		55% {
+			transform: translateX(0) rotate(12deg);
+		}
+		100% {
+			transform: translateX(480%) rotate(12deg);
+		}
+	}
+
+	/* Panel esmerilado más opaco para que el formulario se lea bien sobre el vidrio. */
 	.content {
+		position: relative;
+		z-index: 1;
 		display: flex;
 		flex-direction: column;
 		padding: 1.5rem 0.9rem 1.25rem;
+		background: var(--glass-panel);
+		border: 1px solid var(--glass-panel-border);
+		border-radius: 1.1rem;
 	}
 
 	.view {
@@ -342,6 +557,10 @@ import quilotoa from "../assets/quilotoa.jpg";
 		line-height: 1.12;
 		letter-spacing: -0.01em;
 		color: var(--color-bg);
+		/* Relieve: brillo claro debajo y sombra verde difusa. */
+		text-shadow:
+			0 1px 0 rgba(255, 255, 255, 0.7),
+			0 4px 18px rgba(31, 61, 43, 0.25);
 	}
 
 	.welcome-text {
@@ -355,6 +574,21 @@ import quilotoa from "../assets/quilotoa.jpg";
 		display: flex;
 		flex-direction: column;
 		gap: 0.7rem;
+	}
+
+	/* El botón principal de la bienvenida "respira" con un halo suave. */
+	.welcome .auth-submit {
+		animation: cta-glow 2.8s ease-in-out infinite;
+	}
+
+	@keyframes cta-glow {
+		0%,
+		100% {
+			box-shadow: 0 0 0 0 rgba(46, 90, 63, 0.45);
+		}
+		50% {
+			box-shadow: 0 0 0 8px rgba(46, 90, 63, 0);
+		}
 	}
 
 	/* ---------- Acceso ---------- */
@@ -424,6 +658,9 @@ import quilotoa from "../assets/quilotoa.jpg";
 		line-height: 1.2;
 		letter-spacing: -0.01em;
 		color: var(--color-text);
+		text-shadow:
+			0 1px 0 rgba(255, 255, 255, 0.7),
+			0 3px 14px rgba(31, 61, 43, 0.22);
 	}
 
 	.staff-entry {
@@ -445,17 +682,22 @@ import quilotoa from "../assets/quilotoa.jpg";
 	/* ---------- Foto ---------- */
 	.photo {
 		position: relative;
+		z-index: 1; /* sobre el destello del vidrio */
 		height: 210px;
 		margin: 0;
 		overflow: hidden;
 		border-radius: 1.1rem;
 	}
 
+	/* Las fotos de la galería se apilan; la animación decide cuál se ve. */
 	.photo-img {
+		position: absolute;
+		inset: 0;
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
 		object-position: 50% 45%;
+		animation-name: slide-ken-burns;
 	}
 
 	/* Degradado para que el texto blanco sea legible sobre la foto. */
@@ -485,9 +727,20 @@ import quilotoa from "../assets/quilotoa.jpg";
 		font-size: 1.3rem;
 		font-weight: 700;
 		line-height: 1.2;
+		text-shadow:
+			0 1px 3px rgba(0, 0, 0, 0.4),
+			0 4px 22px rgba(0, 0, 0, 0.5);
+	}
+
+	/* Los nombres de lugar se apilan en la misma celda y cambian junto con la foto. */
+	.photo-places {
+		display: grid;
+		justify-items: start;
 	}
 
 	.photo-place {
+		grid-area: 1 / 1;
+		animation-name: slide-fade;
 		display: inline-block;
 		padding: 0.3rem 0.75rem;
 		font-size: 0.78rem;
@@ -522,6 +775,7 @@ import quilotoa from "../assets/quilotoa.jpg";
 
 		.content {
 			padding: 2rem 1.5rem 1.5rem;
+			border-radius: 1.25rem;
 		}
 
 		.photo {
@@ -558,6 +812,7 @@ import quilotoa from "../assets/quilotoa.jpg";
 			grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
 			max-width: 1180px;
 			height: min(760px, calc(100dvh - 7.5rem));
+			gap: 0.9rem;
 			padding: 0.9rem;
 			border-radius: 2rem;
 		}
@@ -566,6 +821,7 @@ import quilotoa from "../assets/quilotoa.jpg";
 			justify-content: safe center;
 			overflow-y: auto;
 			padding: 2rem 2.5rem;
+			border-radius: 1.5rem;
 		}
 
 		.photo {
@@ -603,6 +859,18 @@ import quilotoa from "../assets/quilotoa.jpg";
 			border: 1px solid var(--glass-border);
 			border-radius: 1rem;
 			box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+			animation: card-float 6s ease-in-out infinite;
+		}
+
+		/* La tarjeta flota suavemente sobre la foto. */
+		@keyframes card-float {
+			0%,
+			100% {
+				transform: translateY(0);
+			}
+			50% {
+				transform: translateY(-8px);
+			}
 		}
 
 		.photo-card-title {
@@ -610,6 +878,7 @@ import quilotoa from "../assets/quilotoa.jpg";
 			font-size: 1.05rem;
 			font-weight: 700;
 			color: var(--color-bg);
+			text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
 		}
 
 		.photo-card-text {
@@ -663,9 +932,23 @@ import quilotoa from "../assets/quilotoa.jpg";
 		}
 	}
 
+	/* Sin animaciones constantes para quien pide menos movimiento. */
 	@media (prefers-reduced-motion: reduce) {
-		.view {
+		.view,
+		.slide,
+		.backdrop-track,
+		.photo-card,
+		.welcome .auth-submit {
 			animation: none;
+		}
+
+		/* La galería se queda quieta en la primera foto. */
+		.slide:first-child {
+			opacity: 1;
+		}
+
+		.frame::before {
+			display: none;
 		}
 
 		.tab {
